@@ -1,0 +1,12 @@
+# Copy to `mise.local.toml` (untracked) and fill in machine-local paths.
+# DELVE_PATH names the TTD-enabled dlv.exe, so a stock dlv on PATH is never
+# picked and the Delve folder does not have to pollute PATH.
+# TTD_DIR is the one TTD folder to name: PATH is derived from it, so the
+# runtime DLLs and ttd.exe resolve without a second copy of the path.
+# TTD_SDK_DIR is only needed to compile the crate (headers + TTDReplay.lib).
+
+[env]
+DELVE_PATH = "C:/path/to/delve/dlv.exe"
+TTD_DIR = "C:/path/to/TTD/x64"
+TTD_SDK_DIR = "C:/path/to/packages/Microsoft.TimeTravelDebugging.Apis.0.9.5"
+_.path = ["{{env.TTD_DIR}}"]

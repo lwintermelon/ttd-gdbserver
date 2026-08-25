@@ -1,0 +1,39 @@
+[package]
+name = "ttd-gdbserver"
+version = "0.1.0"
+edition = "2024"
+description = "Replay WinDbg TTD traces over the GDB Remote Serial Protocol — reversible debugging for GDB, LLDB and Delve on Windows"
+readme = "README.md"
+publish = false
+
+# The crate is clippy-pedantic clean; keeping the lints in the manifest means a
+# plain `cargo clippy --all-targets` enforces the same bar without long
+# command lines, and new code cannot silently regress.
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+# `--all-targets` covers the integration tests too, whose lint levels come from
+# this table because they are separate crates.
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+
+[dependencies]
+thiserror = "2"
+log = "0.4"
+env_logger = "0.11"
+clap = { version = "4", features = ["derive"] }
+bitflags = "2"
+# GDB RSP frontend is built on gdbstub, patched with an `UnknownPacket`
+# target hook so Delve's qRRCmd can be handled while gdbstub owns all
+# standard protocol machinery. The three patches live on the `ttd-dbg`
+# branch of the fork below (each also submitted upstream as a separate PR).
+gdbstub = { git = "https://github.com/lwintermelon/gdbstub", branch = "ttd-dbg", features = ["std"] }
+gdbstub_arch = { git = "https://github.com/lwintermelon/gdbstub", branch = "ttd-dbg" }
+quick-xml = { version = "0.42", default-features = false, features = ["serialize"] }
+ctrlc = { version = "3", features = ["termination"] }
+cxx = "1"
+
+[build-dependencies]
+cxx-build = "1"

@@ -1,0 +1,60 @@
+[env]
+TTD_TRACE_PATH = "{{config_root}}/regression/cases/c-core/c-core.run"
+TTD_FAULT_TRACE_PATH = "{{config_root}}/regression/cases/c-fault/c-fault.run"
+
+[tasks.build]
+description = "Build regression programs"
+run = [
+    "gcc -g -O0 -o regression/cases/c-core/c-core.exe regression/cases/c-core/core.c",
+    "g++ -g -O0 -pthread -o regression/cases/c-cpp-exceptions/c-cpp-exceptions.exe regression/cases/c-cpp-exceptions/cpp_exceptions.cpp",
+    "gcc -g -O0 -o regression/cases/c-fault/c-fault.exe regression/cases/c-fault/fault.c",
+    "gcc -g -O0 -o regression/cases/c-stack-overflow/c-stack-overflow.exe regression/cases/c-stack-overflow/stack_overflow.c",
+    "gcc -g -O0 -pthread -o regression/cases/c-threads/c-threads.exe regression/cases/c-threads/threads.c",
+    "go build \"-gcflags=all=-N -l\" -o regression/cases/go-cgocrash/go-cgocrash.exe regression/cases/go-cgocrash/main.go",
+    "go build \"-gcflags=all=-N -l\" -o regression/cases/go-core/go-core.exe regression/cases/go-core/main.go",
+]
+sources = [
+    "regression/cases/**/*.go",
+    "regression/cases/**/*.c",
+    "regression/cases/**/*.cpp",
+]
+outputs = ["regression/cases/**/*.exe"]
+
+[tasks.build.env]
+CGO_ENABLED = "1"
+CC = "gcc"
+
+[tasks.clean]
+description = "Delete recorded traces and their derived files"
+run = "rm -f regression/cases/*/*.run regression/cases/*/*.out regression/cases/*/*.idx regression/cases/*/*.idxt"
+
+[tasks.record]
+description = "Record all traces (requires administrator privileges)"
+run = [
+    "ttd.exe -acceptEula -noUI -out regression/cases/c-core/c-core.run -launch regression/cases/c-core/c-core.exe",
+    "ttd.exe -acceptEula -noUI -out regression/cases/c-cpp-exceptions/c-cpp-exceptions.run -launch regression/cases/c-cpp-exceptions/c-cpp-exceptions.exe",
+    "ttd.exe -acceptEula -noUI -out regression/cases/c-fault/c-fault.run -launch regression/cases/c-fault/c-fault.exe",
+    "ttd.exe -acceptEula -noUI -out regression/cases/c-stack-overflow/c-stack-overflow.run -launch regression/cases/c-stack-overflow/c-stack-overflow.exe",
+    "ttd.exe -acceptEula -noUI -out regression/cases/c-threads/c-threads.run -launch regression/cases/c-threads/c-threads.exe",
+    "ttd.exe -acceptEula -noUI -out regression/cases/go-cgocrash/go-cgocrash.run -launch regression/cases/go-cgocrash/go-cgocrash.exe",
+    "ttd.exe -acceptEula -noUI -out regression/cases/go-core/go-core.run -launch regression/cases/go-core/go-core.exe",
+]
+
+[tasks.baseline]
+description = "Capture local forward and reverse baselines from trusted code"
+depends = ["build"]
+usage = 'arg "[cases]" var=#true'
+run = "python regression/run.py --update {{usage.cases | join(sep=' ')}}"
+
+[tasks.test]
+description = "Compare forward and reverse transcripts with local baselines"
+depends = ["build"]
+usage = 'arg "[cases]" var=#true'
+run = "python regression/run.py {{usage.cases | join(sep=' ')}}"
+
+[tasks."test:rust"]
+description = "Run Rust tests with the corpus traces"
+run = "cargo test"
+
+[tasks.default]
+depends = ["test"]

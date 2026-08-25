@@ -1,0 +1,7 @@
+__pycache__/
+cases/**/*.exe
+cases/**/*.base
+*.idx
+*.idxt
+*.run
+*.out
