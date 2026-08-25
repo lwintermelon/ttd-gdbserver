@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!DOCTYPE target SYSTEM "gdb-target.dtd">
+<target>
+  <architecture>i386:x86-64</architecture>
+  <xi:include href="64bit-core.xml"/>
+  <xi:include href="64bit-sse.xml"/>
+  <xi:include href="64bit-seg.xml"/>
+</target>

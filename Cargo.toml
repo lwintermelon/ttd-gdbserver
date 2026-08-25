@@ -1,0 +1,55 @@
+[workspace]
+members = ["test-support"]
+resolver = "3"
+
+[package]
+name = "ttd-gdbserver"
+version = "0.1.0"
+edition = "2024"
+description = "Replay WinDbg TTD traces over the GDB Remote Serial Protocol — reversible debugging for GDB, LLDB and Delve on Windows"
+readme = "README.md"
+publish = false
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
+
+[dependencies]
+thiserror = "2"
+log = "0.4"
+env_logger = "0.11"
+clap = { version = "4", features = ["derive"] }
+# GDB RSP frontend is built on gdbstub, patched with an `UnknownPacket`
+# target hook so Delve's qRRCmd can be handled while gdbstub owns all
+# standard protocol machinery. The three patches live on the `ttd-dbg`
+# branch of the fork below (each also submitted upstream as a separate PR).
+gdbstub = { git = "https://github.com/lwintermelon/gdbstub", branch = "ttd-dbg", features = ["std"] }
+gdbstub_arch = { git = "https://github.com/lwintermelon/gdbstub", branch = "ttd-dbg" }
+quick-xml = { version = "0.42", default-features = false, features = ["serialize"] }
+ctrlc = { version = "3", features = ["termination"] }
+
+[dev-dependencies]
+# Shared helper crate for the integration-test targets. It depends back on
+# this library; Cargo allows that dev-dependency cycle and builds the helper
+# once instead of recompiling `tests/common` into every test binary.
+ttd-gdbserver-test-support = { path = "test-support" }
+
+[build-dependencies]
+cc = "1"
+# bindgen 0.73.2 declares `syn = ">=2, <4"` but its optional `prettyplease`
+# dependency requires syn 2; Cargo picking syn 3 makes that combination fail to
+# compile. We use bindgen's default rustfmt formatter, so the prettyplease
+# feature is unnecessary: disable it (latest bindgen-0.72-compatible details
+# still get resolved for everything else).
+bindgen = { version = "0.73", default-features = false, features = ["logging", "runtime"] }
+
+# `tests/gdb/` is a multi-file integration test. Naming its root explicitly
+# lets it live beside its modules as the descriptive `suite.rs`.
+[[test]]
+name = "gdb"
+path = "tests/gdb/suite.rs"
+
+[[test]]
+name = "target"
+path = "tests/target/suite.rs"

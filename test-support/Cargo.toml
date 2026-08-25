@@ -1,0 +1,8 @@
+[package]
+name = "ttd-gdbserver-test-support"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+ttd-gdbserver = { path = ".." }

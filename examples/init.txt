@@ -1,0 +1,18 @@
+break main.compute
+continue
+step
+step
+print total
+print points
+step-instruction
+rev step-instruction
+checkpoint c1
+break main.add
+continue
+rev continue
+stack 3
+restart c1
+step
+step
+print total
+exit
