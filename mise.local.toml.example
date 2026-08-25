@@ -1,0 +1,14 @@
+# Copy to `mise.local.toml` (untracked) and fill in machine-local paths.
+# Every entry is optional: the e2e scripts also find `dlv`, `TTD.exe` and the
+# TTD runtime DLLs on PATH, and accept `TTD_DLV`/`TTD_DIR`/`DELVE_DIR`/`TTD_EXE`
+# from the environment.
+
+[env]
+TTD_DLV = "C:/path/to/delve/dlv.exe"
+DELVE_DIR = "C:/path/to/delve"
+TTD_DIR = "C:/path/to/TTD/x64"
+TTD_EXE = "C:/path/to/TTD/x64/TTD.exe"
+_.path = [
+    "C:/path/to/delve",
+    "C:/path/to/TTD/x64",
+]

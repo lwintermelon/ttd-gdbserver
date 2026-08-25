@@ -1,0 +1,52 @@
+26	    int y = 25;
+27	    int z = add(x, y);
+$1 = 17
+$2 = 25
+Breakpoint 2 at 0xADDR: file core.c, line 15.
+Breakpoint hit, add (a=17, b=25) at core.c:15
+15	    int sum = a + b;
+a = 17
+b = 25
+#0  add (a=17, b=25) at core.c:15
+#1  0xADDR in main () at core.c:27
+0xADDR:	0xADDR	0xADDR
+0xADDR:	0xADDR	0xADDR
+0xADDR:	0xADDR	0xADDR
+0xADDR:	0xADDR	0xADDR
+16	    return sum;
+$3 = 42
+0xADDR in main () at core.c:27
+27	    int z = add(x, y);
+Value returned is $4 = 42
+28	    tls_counter += 1;
+$5 = 42
+0xADDR	28	    tls_counter += 1;
+$6 = 0xADDR
+0xADDR	28	    tls_counter += 1;
+$7 = 0xADDR
+30	    int acc = 0;
+$8 = 0xADDR
+Hardware watchpoint 3: g_total
+Thread TID hit Hardware watchpoint 3: g_total
+Old value = 0
+New value = 3
+bump (v=3) at core.c:21
+21	    return g_total;
+$9 = 3
+#0  bump (v=3) at core.c:21
+#1  0xADDR in main () at core.c:32
+Hardware read watchpoint 4: g_total
+Thread TID hit Hardware read watchpoint 4: g_total
+Value = 3
+bump (v=3) at core.c:22
+22	}
+$10 = 3
+Hardware access (read/write) watchpoint 5: g_total
+Thread TID hit Hardware access (read/write) watchpoint 5: g_total
+Value = 3
+0xADDR in bump (v=6) at core.c:20
+20	    g_total += v;
+$11 = 3
+No locals.
+#0  0xADDR in bump (v=6) at core.c:20
+#1  0xADDR in main () at core.c:32

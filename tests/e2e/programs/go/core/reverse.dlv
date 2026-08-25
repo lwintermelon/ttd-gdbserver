@@ -1,0 +1,28 @@
+# The same program on rewind, which is where Delve's trace-only commands live:
+# qRRCmd when/checkpoint/info/delete, vRun restarts (checkpoint and trace
+# start), reverse continue, and reverse instruction stepping.
+break main.consume if id == 0
+continue
+print id
+locals
+stack 6
+next
+next
+rev step-instruction
+step-instruction
+checkpoint c1
+step
+restart c1
+locals
+checkpoints
+clear-checkpoint c1
+checkpoints
+rev continue
+clear 1
+break main.deep
+continue
+print n
+stack 4
+rev step-instruction
+step-instruction
+exit

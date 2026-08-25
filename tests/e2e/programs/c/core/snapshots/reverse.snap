@@ -1,0 +1,185 @@
+warning: remote target does not support file transfer, attempting to access files from local filesystem.
+0x00007ff950cff090 in ntdll!LdrInitializeThunk () from <PATH>/ntdll.dll
+Breakpoint 1 at 0x7ff635d914df: file core.c, line 25.
+Thread 1 hit Breakpoint 1, main () at core.c:25
+25	    int x = 17;
+$1 = 0x7ff635d914df
+26	    int y = 25;
+$2 = 0x7ff635d914e6
+27	    int z = add(x, y);
+$3 = 0x7ff635d914ed
+Breakpoint 2 at 0x7ff635d9149e: file core.c, line 15.
+Thread 1 hit Breakpoint 2, add (a=17, b=25) at core.c:15
+15	    int sum = a + b;
+$4 = 0x7ff635d9149e
+a = 17
+b = 25
+sum = 23
+#0  add (a=17, b=25) at core.c:15
+#1  0x00007ff635d914fa in main () at core.c:27
+0x17117ff750:	0x00000017117ff7c0	0x00000017117ff7c0
+0x17117ff760:	0x00000017117ff7b0	0x00007ff635d914fa
+0x17117ff770:	0x0000012c00000011	0x00007ff900000019
+0x17117ff780:	0x00007ff635d97050	0x0000000000000001
+main () at core.c:27
+27	    int z = add(x, y);
+$5 = 0x7ff635d914ed
+0x00007ff635d914f0	27	    int z = add(x, y);
+$6 = 0x7ff635d914f0
+27	    int z = add(x, y);
+$7 = 0x7ff635d914ed
+Thread 1 hit Breakpoint 1, main () at core.c:25
+25	    int x = 17;
+$8 = 0x7ff635d914df
+x = 23
+y = 293599184
+z = 23
+acc = 32758
+$9 = 0x171143d000
+0x171143d000:	0x0000000000000000	0x0000001711800000
+Hardware watchpoint 3: g_total
+Thread 1 hit Breakpoint 2, add (a=17, b=25) at core.c:15
+15	    int sum = a + b;
+$10 = 0
+Thread 1 hit Hardware watchpoint 3: g_total
+Old value = 0
+New value = 3
+bump (v=3) at core.c:21
+21	    return g_total;
+$11 = 3
+Thread 1 hit Breakpoint 2, add (a=17, b=25) at core.c:15
+15	    int sum = a + b;
+$12 = 0
+Thread 1 hit Breakpoint 1, main () at core.c:25
+25	    int x = 17;
+$13 = 0
+rax            0x1                 1
+rbx            0x7ff635d97050      140695442124880
+rcx            0x1                 1
+rdx            0x12c575c5100       1289955856640
+rsi            0x1                 1
+rdi            0x12c575c6030       1289955860528
+rbp            0x17117ff7b0        0x17117ff7b0
+rsp            0x17117ff770        0x17117ff770
+r8             0x12c575cb190       1289955881360
+r9             0x12c575b6b00       1289955797760
+r10            0xf3e4410e398       16760104346520
+r11            0x17117ff7b8        99077846968
+r12            0x7ff635d97058      140695442124888
+r13            0x0                 0
+r14            0x1                 1
+r15            0x50                80
+rip            0x7ff635d914df      0x7ff635d914df <main+13>
+eflags         0x202               [ IF ]
+cs             0x33                51
+ss             0x2b                43
+ds             0x2b                43
+es             0x2b                43
+fs             0x53                83
+gs             0x2b                43
+st0            0                   (raw 0x00000000000000000000)
+st1            0                   (raw 0x00000000000000000000)
+st2            0                   (raw 0x00000000000000000000)
+st3            0                   (raw 0x00000000000000000000)
+st4            0                   (raw 0x00000000000000000000)
+st5            0                   (raw 0x00000000000000000000)
+st6            0                   (raw 0x00000000000000000000)
+st7            0                   (raw 0x00000000000000000000)
+fctrl          0x37f               895
+fstat          0x0                 0
+ftag           0x0                 0
+fiseg          0x0                 0
+fioff          0x0                 0
+foseg          0x0                 0
+fooff          0x0                 0
+fop            0x0                 0
+xmm0           {v4_float = {0x555c3a44, 0x73726573, 0x6d77745c, 0x636f445c}, v2_double = {0x73726573555c3a44, 0x636f445c6d77745c}, v16_int8 = {0x44, 0x3a, 0x5c, 0x55, 0x73, 0x65, 0x72, 0x73, 0x5c, 0x74, 0x77, 0x6d, 0x5c, 0x44, 0x6f, 0x63}, v8_int16 = {0x3a44, 0x555c, 0x6573, 0x7372, 0x745c, 0x6d77, 0x445c, 0x636f}, v4_int32 = {0x555c3a44, 0x73726573, 0x6d77745c, 0x636f445c}, v2_int64 = {0x73726573555c3a44, 0x636f445c6d77745c}, uint128 = 0x636f445c6d77745c73726573555c3a44}
+xmm1           {v4_float = {0x672d6474, 0x65736264, 0x72657672, 0x7365745c}, v2_double = {0x65736264672d6474, 0x7365745c72657672}, v16_int8 = {0x74, 0x64, 0x2d, 0x67, 0x64, 0x62, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x5c, 0x74, 0x65, 0x73}, v8_int16 = {0x6474, 0x672d, 0x6264, 0x6573, 0x7672, 0x7265, 0x745c, 0x7365}, v4_int32 = {0x672d6474, 0x65736264, 0x72657672, 0x7365745c}, v2_int64 = {0x65736264672d6474, 0x7365745c72657672}, uint128 = 0x7365745c7265767265736264672d6474}
+xmm2           {v4_float = {0x0, 0x0, 0x0, 0x0}, v2_double = {0x0, 0x0}, v16_int8 = {0x0 <repeats 16 times>}, v8_int16 = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, v4_int32 = {0x0, 0x0, 0x0, 0x0}, v2_int64 = {0x0, 0x0}, uint128 = 0x0}
+xmm3           {v4_float = {0x0, 0x0, 0x0, 0x0}, v2_double = {0x0, 0x0}, v16_int8 = {0x0 <repeats 16 times>}, v8_int16 = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, v4_int32 = {0x0, 0x0, 0x0, 0x0}, v2_int64 = {0x0, 0x0}, uint128 = 0x0}
+xmm4           {v4_float = {0x0, 0x0, 0x0, 0x0}, v2_double = {0x0, 0x0}, v16_int8 = {0x0 <repeats 16 times>}, v8_int16 = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, v4_int32 = {0x0, 0x0, 0x0, 0x0}, v2_int64 = {0x0, 0x0}, uint128 = 0x0}
+xmm5           {v4_float = {0x655c7374, 0x705c6532, 0x72676f72, 0x5c736d61}, v2_double = {0x705c6532655c7374, 0x5c736d6172676f72}, v16_int8 = {0x74, 0x73, 0x5c, 0x65, 0x32, 0x65, 0x5c, 0x70, 0x72, 0x6f, 0x67, 0x72, 0x61, 0x6d, 0x73, 0x5c}, v8_int16 = {0x7374, 0x655c, 0x6532, 0x705c, 0x6f72, 0x7267, 0x6d61, 0x5c73}, v4_int32 = {0x655c7374, 0x705c6532, 0x72676f72, 0x5c736d61}, v2_int64 = {0x705c6532655c7374, 0x5c736d6172676f72}, uint128 = 0x5c736d6172676f72705c6532655c7374}
+xmm6           {v4_float = {0x0, 0x0, 0x0, 0x0}, v2_double = {0x0, 0x0}, v16_int8 = {0x0 <repeats 16 times>}, v8_int16 = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, v4_int32 = {0x0, 0x0, 0x0, 0x0}, v2_int64 = {0x0, 0x0}, uint128 = 0x0}
+xmm7           {v4_float = {0x0, 0x0, 0x0, 0x0}, v2_double = {0x0, 0x0}, v16_int8 = {0x0 <repeats 16 times>}, v8_int16 = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, v4_int32 = {0x0, 0x0, 0x0, 0x0}, v2_int64 = {0x0, 0x0}, uint128 = 0x0}
+xmm8           {v4_float = {0x0, 0x0, 0x0, 0x0}, v2_double = {0x0, 0x0}, v16_int8 = {0x0 <repeats 16 times>}, v8_int16 = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, v4_int32 = {0x0, 0x0, 0x0, 0x0}, v2_int64 = {0x0, 0x0}, uint128 = 0x0}
+xmm9           {v4_float = {0x0, 0x0, 0x0, 0x0}, v2_double = {0x0, 0x0}, v16_int8 = {0x0 <repeats 16 times>}, v8_int16 = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, v4_int32 = {0x0, 0x0, 0x0, 0x0}, v2_int64 = {0x0, 0x0}, uint128 = 0x0}
+xmm10          {v4_float = {0x0, 0x0, 0x0, 0x0}, v2_double = {0x0, 0x0}, v16_int8 = {0x0 <repeats 16 times>}, v8_int16 = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, v4_int32 = {0x0, 0x0, 0x0, 0x0}, v2_int64 = {0x0, 0x0}, uint128 = 0x0}
+xmm11          {v4_float = {0x0, 0x0, 0x0, 0x0}, v2_double = {0x0, 0x0}, v16_int8 = {0x0 <repeats 16 times>}, v8_int16 = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, v4_int32 = {0x0, 0x0, 0x0, 0x0}, v2_int64 = {0x0, 0x0}, uint128 = 0x0}
+xmm12          {v4_float = {0x0, 0x0, 0x0, 0x0}, v2_double = {0x0, 0x0}, v16_int8 = {0x0 <repeats 16 times>}, v8_int16 = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, v4_int32 = {0x0, 0x0, 0x0, 0x0}, v2_int64 = {0x0, 0x0}, uint128 = 0x0}
+xmm13          {v4_float = {0x0, 0x0, 0x0, 0x0}, v2_double = {0x0, 0x0}, v16_int8 = {0x0 <repeats 16 times>}, v8_int16 = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, v4_int32 = {0x0, 0x0, 0x0, 0x0}, v2_int64 = {0x0, 0x0}, uint128 = 0x0}
+xmm14          {v4_float = {0x0, 0x0, 0x0, 0x0}, v2_double = {0x0, 0x0}, v16_int8 = {0x0 <repeats 16 times>}, v8_int16 = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, v4_int32 = {0x0, 0x0, 0x0, 0x0}, v2_int64 = {0x0, 0x0}, uint128 = 0x0}
+xmm15          {v4_float = {0x0, 0x0, 0x0, 0x0}, v2_double = {0x0, 0x0}, v16_int8 = {0x0 <repeats 16 times>}, v8_int16 = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, v4_int32 = {0x0, 0x0, 0x0, 0x0}, v2_int64 = {0x0, 0x0}, uint128 = 0x0}
+mxcsr          0x1f80              [ IM DM ZM OM UM PM ]
+fs_base        0x0                 0x0
+gs_base        0x171143d000        0x171143d000
+Hardware assisted breakpoint 4 at 0x7ff635d914b9: file core.c, line 20.
+Thread 1 hit Breakpoint 2, add (a=17, b=25) at core.c:15
+15	    int sum = a + b;
+a = 17
+b = 25
+sending: Z2,171143d000,0
+received: "E16"
+sending: qXfer:auxv:read::0,ff
+received: "m	\x00\x00\x00\x00\x00\x00\x00\x00\x00\xd95\xf6\x7f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+sending: qXfer:exec-file:read::0,ff
+received: "m<PATH>/core.exe"
+sending: qXfer:features:read:nosuch.xml:0,10
+received: "E79"
+sending: qRRCmd:7768656e
+received: "32353a31363342"
+sending: qGetTIBAddr:p1.686c
+received: "171143d000"
+sending: qGetTLSAddr:p1.686c,0,0
+received: "171143d000"
+sending: qRRCmd:when:-1
+received: "32353a31363342"
+sending: qRRCmd:checkpoint:-1:
+received: "436865636b706f696e7420312061742032353a31363342"
+sending: qRRCmd:info checkpoints:-1
+received: "4e756d095768656e0957686572650a310932353a31363342092d0a"
+sending: qRRCmd:delete checkpoint:-1:31
+received: "44656c6574656420636865636b706f696e742031"
+sending: qRRCmd:delete checkpoint:-1:37
+received: "4e6f207375636820636865636b706f696e74"
+sending: qRRCmd:info checkpoints:-1
+received: "4e756d095768656e0957686572650a"
+sending: vRun;;7a7a7a
+received: "E79"
+sending: vRun;;63393939
+received: "E79"
+sending: qRRCmd:when:-1
+received: "32353a31363342"
+sending: vRun;;
+received: "T05thread:p01.686c;"
+sending: qRRCmd:when:-1
+received: "433a30"
+sending: R00
+received: ""
+sending: qRRCmd:when:-1
+received: "433a30"
+trace: loaded (TTD replay engine)
+version: 0.1.0
+lifetime: c:0 .. 165:ab3
+current: c:0
+index: loaded
+modules: 9
+threads (lifetime): 2
+exception events: 0
+  UTID      OS_TID      active_min      active_max
+     2  0x0000686c          c:0000        165:0ab3
+     3  0x00006f5c         8e:0000         a4:0000
+queries: 173
+cursor seeks: 23
+steps: 16
+replays: 8
+watchpoint adds: 36
+watchpoint removes: 36
+seeks per query: 0.133
+exception events: 0 (showing up to 20)
+no module contains 0xffffffffffffffff
+sending: vCont;c
+received: "T05thread:p01.686c;"
+sending: vCont;c
+received: "T09thread:p01.686c;"
+sending: vCont;c
+received: "W00"

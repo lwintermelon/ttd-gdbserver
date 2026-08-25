@@ -1,0 +1,170 @@
+Type 'help' for list of commands.
+Breakpoint 1 set at 0x7ff74c99a633 for main.consume() <PATH>/main.go:19
+> [Breakpoint 1] main.consume() <PATH>/main.go:19 (hits goroutine(5):1 total:1) (PC: 0x7ff74c99a633)
+A37:69
+    14:
+    15:	const workers = 3
+    16:	const perWorker = 4
+    17:
+    18:	//go:noinline
+=>  19:	func consume(id int, in <-chan int, hits *atomic.Int64, wg *sync.WaitGroup) {
+    20:		defer wg.Done()
+    21:		for v := range in {
+    22:			hits.Add(int64(v))
+    23:		}
+    24:	}
+0
+(no locals)
+0  0x00007ff74c99a633 in main.consume
+   at <PATH>/main.go:19
+1  0x00007ff74c99af66 in main.main.gowrap1
+   at <PATH>/main.go:54
+2  0x00007ff74c959161 in runtime.goexit
+   at <PATH>/asm_amd64.s:1264
+> main.consume() <PATH>/main.go:20 (PC: 0x7ff74c99a657)
+A37:6E
+    15:	const workers = 3
+    16:	const perWorker = 4
+    17:
+    18:	//go:noinline
+    19:	func consume(id int, in <-chan int, hits *atomic.Int64, wg *sync.WaitGroup) {
+=>  20:		defer wg.Done()
+    21:		for v := range in {
+    22:			hits.Add(int64(v))
+    23:		}
+    24:	}
+    25:
+> main.consume() <PATH>/main.go:21 (PC: 0x7ff74c99a693)
+A37:8D
+    16:	const perWorker = 4
+    17:
+    18:	//go:noinline
+    19:	func consume(id int, in <-chan int, hits *atomic.Int64, wg *sync.WaitGroup) {
+    20:		defer wg.Done()
+=>  21:		for v := range in {
+    22:			hits.Add(int64(v))
+    23:		}
+    24:	}
+    25:
+    26:	//go:noinline
+> main.consume() <PATH>/main.go:20 (PC: 0x7ff74c99a691)
+A37:8C
+	main.go:20	0x7ff74c99a678	488b542478		mov rdx, qword ptr [rsp+0x78]
+	main.go:20	0x7ff74c99a67d	4889542460		mov qword ptr [rsp+0x60], rdx
+	main.go:20	0x7ff74c99a682	48894c2440		mov qword ptr [rsp+0x40], rcx
+	main.go:20	0x7ff74c99a687	488d442428		lea rax, ptr [rsp+0x28]
+	main.go:20	0x7ff74c99a68c	e84f2df8ff		call runtime.deferprocStack
+=>	main.go:20	0x7ff74c99a691	eb00			jmp 0x7ff74c99a693
+	main.go:21	0x7ff74c99a693	488b8c2498000000	mov rcx, qword ptr [rsp+0x98]
+	main.go:21	0x7ff74c99a69b	48894c2470		mov qword ptr [rsp+0x70], rcx
+	main.go:21	0x7ff74c99a6a0	eb0b			jmp 0x7ff74c99a6ad
+	main.go:24	0x7ff74c99a6a2	e81930f8ff		call runtime.deferreturn
+	main.go:24	0x7ff74c99a6a7	4883ec80		sub rsp, -0x80
+> main.consume() <PATH>/main.go:21 (PC: 0x7ff74c99a693)
+A37:8D
+	main.go:20	0x7ff74c99a67d	4889542460		mov qword ptr [rsp+0x60], rdx
+	main.go:20	0x7ff74c99a682	48894c2440		mov qword ptr [rsp+0x40], rcx
+	main.go:20	0x7ff74c99a687	488d442428		lea rax, ptr [rsp+0x28]
+	main.go:20	0x7ff74c99a68c	e84f2df8ff		call runtime.deferprocStack
+	main.go:20	0x7ff74c99a691	eb00			jmp 0x7ff74c99a693
+=>	main.go:21	0x7ff74c99a693	488b8c2498000000	mov rcx, qword ptr [rsp+0x98]
+	main.go:21	0x7ff74c99a69b	48894c2470		mov qword ptr [rsp+0x70], rcx
+	main.go:21	0x7ff74c99a6a0	eb0b			jmp 0x7ff74c99a6ad
+	main.go:24	0x7ff74c99a6a2	e81930f8ff		call runtime.deferreturn
+	main.go:24	0x7ff74c99a6a7	4883ec80		sub rsp, -0x80
+	main.go:24	0x7ff74c99a6ab	5d			pop rbp
+Checkpoint c1 created.
+> main.consume() <PATH>/main.go:22 (PC: 0x7ff74c99a6d9)
+A54:91
+    17:
+    18:	//go:noinline
+    19:	func consume(id int, in <-chan int, hits *atomic.Int64, wg *sync.WaitGroup) {
+    20:		defer wg.Done()
+    21:		for v := range in {
+=>  22:			hits.Add(int64(v))
+    23:		}
+    24:	}
+    25:
+    26:	//go:noinline
+    27:	func deep(n int) int {
+> main.consume() <PATH>/main.go:21 (PC: 0x7ff74c99a693)
+A37:8D
+    16:	const perWorker = 4
+    17:
+    18:	//go:noinline
+    19:	func consume(id int, in <-chan int, hits *atomic.Int64, wg *sync.WaitGroup) {
+    20:		defer wg.Done()
+=>  21:		for v := range in {
+    22:			hits.Add(int64(v))
+    23:		}
+    24:	}
+    25:
+    26:	//go:noinline
+(no locals)
+ID  When    Note
+c1  A37:8D  c1
+ID  When  Note
+> [Breakpoint 1] main.consume() <PATH>/main.go:19 (hits goroutine(5):2 total:2) (PC: 0x7ff74c99a633)
+A37:69
+    14:
+    15:	const workers = 3
+    16:	const perWorker = 4
+    17:
+    18:	//go:noinline
+=>  19:	func consume(id int, in <-chan int, hits *atomic.Int64, wg *sync.WaitGroup) {
+    20:		defer wg.Done()
+    21:		for v := range in {
+    22:			hits.Add(int64(v))
+    23:		}
+    24:	}
+Breakpoint 1 cleared at 0x7ff74c99a633 for main.consume() <PATH>/main.go:19
+Breakpoint 2 set at 0x7ff74c99a756 for main.deep() <PATH>/main.go:27
+> [Breakpoint 2] main.deep() <PATH>/main.go:27 (hits goroutine(1):1 total:1) (PC: 0x7ff74c99a756)
+B60:33D
+    22:			hits.Add(int64(v))
+    23:		}
+    24:	}
+    25:
+    26:	//go:noinline
+=>  27:	func deep(n int) int {
+    28:		var pad [2048]byte
+    29:		pad[n%len(pad)] = byte(n)
+    30:		if n == 0 {
+    31:			return int(pad[0])
+    32:		}
+3000
+0  0x00007ff74c99a756 in main.deep
+   at <PATH>/main.go:27
+1  0x00007ff74c99abe8 in main.main
+   at <PATH>/main.go:65
+2  0x00007ff74c921755 in runtime.main
+   at <PATH>/proc.go:302
+3  0x00007ff74c959161 in runtime.goexit
+   at <PATH>/asm_amd64.s:1264
+> main.deep() <PATH>/main.go:27 (PC: 0x7ff74c99a753)
+B60:33C
+TEXT main.deep(SB) <PATH>/main.go
+	main.go:27	0x7ff74c99a740	4c8da42458f8ffff		lea r12, ptr [rsp+0xfffff858]
+	main.go:27	0x7ff74c99a748	4d3b6610			cmp r12, qword ptr [r14+0x10]
+	main.go:27	0x7ff74c99a74c	0f86d4000000			jbe 0x7ff74c99a826
+	main.go:27	0x7ff74c99a752	55				push rbp
+=>	main.go:27	0x7ff74c99a753	4889e5				mov rbp, rsp
+	main.go:27	0x7ff74c99a756*	4881ec20080000			sub rsp, 0x820
+	main.go:27	0x7ff74c99a75d	4889842430080000		mov qword ptr [rsp+0x830], rax
+	main.go:27	0x7ff74c99a765	48c784240808000000000000	mov qword ptr [rsp+0x808], 0x0
+	main.go:28	0x7ff74c99a771	488d7c2408			lea rdi, ptr [rsp+0x8]
+	main.go:28	0x7ff74c99a776	b900010000			mov ecx, 0x100
+> main.deep() <PATH>/main.go:27 (PC: 0x7ff74c99a756)
+B60:33D
+TEXT main.deep(SB) <PATH>/main.go
+	main.go:27	0x7ff74c99a740	4c8da42458f8ffff		lea r12, ptr [rsp+0xfffff858]
+	main.go:27	0x7ff74c99a748	4d3b6610			cmp r12, qword ptr [r14+0x10]
+	main.go:27	0x7ff74c99a74c	0f86d4000000			jbe 0x7ff74c99a826
+	main.go:27	0x7ff74c99a752	55				push rbp
+	main.go:27	0x7ff74c99a753	4889e5				mov rbp, rsp
+=>	main.go:27	0x7ff74c99a756*	4881ec20080000			sub rsp, 0x820
+	main.go:27	0x7ff74c99a75d	4889842430080000		mov qword ptr [rsp+0x830], rax
+	main.go:27	0x7ff74c99a765	48c784240808000000000000	mov qword ptr [rsp+0x808], 0x0
+	main.go:28	0x7ff74c99a771	488d7c2408			lea rdi, ptr [rsp+0x8]
+	main.go:28	0x7ff74c99a776	b900010000			mov ecx, 0x100
+	main.go:28	0x7ff74c99a77b	31c0				xor eax, eax

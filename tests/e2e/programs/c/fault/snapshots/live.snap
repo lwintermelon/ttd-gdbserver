@@ -1,0 +1,19 @@
+23	    fflush(stdout);
+24	    return wrapper(3);
+<SIGNAL> received signal SIGSEGV, Segmentation fault.
+0xADDR in fault () at fault.c:13
+13	    return *g_bad;
+$1 = 0xADDR
+#0  0xADDR in fault () at fault.c:13
+#1  0xADDR in wrapper (n=3) at fault.c:18
+#2  0xADDR in main () at fault.c:24
+No locals.
+=> 0xADDR <fault+11>:	mov    (%rax),%eax
+#1  0xADDR in wrapper (n=3) at fault.c:18
+18	    return fault() + value;
+n = 3
+value = 4
+0xADDR:	0xADDR	0xADDR
+0xADDR:	0xADDR	0xADDR
+#0  0xADDR in fault () at fault.c:13
+13	    return *g_bad;

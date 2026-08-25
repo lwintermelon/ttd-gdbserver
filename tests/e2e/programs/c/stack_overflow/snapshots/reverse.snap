@@ -1,0 +1,41 @@
+warning: remote target does not support file transfer, attempting to access files from local filesystem.
+0x00007ff950cff090 in ntdll!LdrInitializeThunk () from <PATH>/ntdll.dll
+Breakpoint 1 at 0x7ff6c1f71502: file stack_overflow.c, line 18.
+Breakpoint 1, main () at stack_overflow.c:18
+18	    printf("starting recursion\n");
+Program received signal SIGSEGV, Segmentation fault.
+___chkstk_ms () at <PATH>/cygwin.S:132
+warning: 132	<PATH>/cygwin.S: No such file or directory
+#0  ___chkstk_ms () at <PATH>/cygwin.S:132
+#1  0x00007ff6c1f7149b in recurse (n=0) at stack_overflow.c:10
+#2  0x00007ff6c1f714e4 in recurse (n=498) at stack_overflow.c:14
+#3  0x00007ff6c1f714e4 in recurse (n=497) at stack_overflow.c:14
+#4  0x00007ff6c1f714e4 in recurse (n=496) at stack_overflow.c:14
+#5  0x00007ff6c1f714e4 in recurse (n=495) at stack_overflow.c:14
+#6  0x00007ff6c1f714e4 in recurse (n=494) at stack_overflow.c:14
+#7  0x00007ff6c1f714e4 in recurse (n=493) at stack_overflow.c:14
+No symbol table info available.
+=> 0x7ff6c1f7280b <___chkstk_ms+43>:	orq    $0x0,(%rcx)
+$1 = 0x7ff6c1f7280b
+132	in <PATH>/cygwin.S
+$2 = 0x7ff6c1f7280b
+Program received signal SIGSEGV, Segmentation fault.
+___chkstk_ms () at <PATH>/cygwin.S:132
+132	in <PATH>/cygwin.S
+$3 = 0x7ff6c1f7280b
+#1  0x00007ff6c1f7149b in recurse (n=0) at stack_overflow.c:10
+10	static int recurse(int n) {
+n = 0
+pad = <error reading variable pad (Cannot access memory at address 0x7dc2404a00)>
+v = 32758
+0x7dc2405010:	0x0000007dc24050a0	0x00007ff6c1f714e4
+0x7dc2405020:	0x0000000000000000	0x0000000000000000
+#0  ___chkstk_ms () at <PATH>/cygwin.S:132
+warning: 132	<PATH>/cygwin.S: No such file or directory
+Breakpoint 1, main () at stack_overflow.c:18
+18	    printf("starting recursion\n");
+$4 = 0x7ff6c1f71502
+No arguments.
+exception events: 1 (showing up to 20)
+0xc00000fd at 0x0 (pc 0x7ff6c1f7280b) pos 37:0
+[Inferior 1 (process 1) detached]

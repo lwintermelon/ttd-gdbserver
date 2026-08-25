@@ -1,0 +1,96 @@
+# Task runner for the source-level e2e corpus.
+#
+# Machine-local tool paths (delve, TTD) belong in the untracked
+# `mise.local.toml`. See `mise.local.toml.example`.
+
+[env]
+# The recording the Rust integration tests run against. `{{config_root}}` is
+# mise's interpolation for the directory holding this file, so a clone works
+# anywhere; the trace itself is local-only (tests/e2e/traces is ignored).
+# Without these (`cargo test` outside mise) the trace-backed tests are
+# reported as `ignored` instead of failing.
+TTD_TRACE_PATH = "{{config_root}}/tests/e2e/traces/c-core.run"
+TTD_FAULT_TRACE_PATH = "{{config_root}}/tests/e2e/traces/c-fault.run"
+
+[tasks.build]
+description = "Build all Go/C/C++ e2e programs"
+run = "python tests/e2e/e2e.py build"
+sources = [
+    "tests/e2e/commands/build.py",
+    "tests/e2e/programs/**/*.go",
+    "tests/e2e/programs/**/*.mod",
+    "tests/e2e/programs/**/*.c",
+    "tests/e2e/programs/**/*.cpp",
+    "tests/e2e/programs/**/build.toml",
+]
+outputs = ["tests/e2e/programs/**/*.exe"]
+
+[tasks.record]
+description = "Record missing/updated traces with TTD (run from an elevated terminal)"
+depends = ["build"]
+run = "python tests/e2e/e2e.py record"
+sources = [
+    "tests/e2e/commands/record.py",
+    "tests/e2e/programs/**/forward.dlv",
+    "tests/e2e/programs/**/forward.gdb",
+    "tests/e2e/programs/**/*.exe",
+]
+outputs = ["tests/e2e/traces/*.run"]
+
+[tasks."snapshots:forward"]
+description = "Refresh cached live forward snapshots (runs live once)"
+depends = ["build"]
+run = "python tests/e2e/e2e.py forward --record"
+sources = [
+    "tests/e2e/e2e.py",
+    "tests/e2e/harness/**/*.py",
+    "tests/e2e/commands/forward.py",
+    "tests/e2e/programs/**/forward.dlv",
+    "tests/e2e/programs/**/forward.gdb",
+    "tests/e2e/programs/**/*.exe",
+    "tests/e2e/traces/*.run",
+]
+outputs = [
+    "tests/e2e/programs/**/snapshots/live.snap",
+]
+
+[tasks."test:forward"]
+description = "Forward replay vs the recorded live snapshot"
+depends = ["snapshots:forward"]
+run = "python tests/e2e/e2e.py forward"
+
+[tasks."snapshots:reverse"]
+description = "Refresh cached reverse snapshots"
+depends = ["build", "snapshots:forward"]
+run = "python tests/e2e/e2e.py reverse --record"
+sources = [
+    "tests/e2e/e2e.py",
+    "tests/e2e/harness/**/*.py",
+    "tests/e2e/commands/reverse.py",
+    "tests/e2e/programs/**/reverse.dlv",
+    "tests/e2e/programs/**/reverse.gdb",
+    "tests/e2e/programs/**/*.exe",
+    "tests/e2e/traces/*.run",
+]
+outputs = ["tests/e2e/programs/**/snapshots/reverse.snap"]
+
+[tasks.snapshots]
+description = "Refresh all cached forward and reverse snapshots"
+depends = ["snapshots:reverse"]
+
+[tasks."test:reverse"]
+description = "Reverse replay determinism vs cached reverse snapshots"
+depends = ["snapshots:reverse"]
+run = "python tests/e2e/e2e.py reverse"
+
+[tasks."test:rust"]
+description = "Rust unit + integration tests, with the corpus traces from [env]"
+run = "cargo test"
+
+[tasks.test]
+description = "Run both e2e gates"
+depends = ["test:forward", "test:reverse"]
+
+[tasks.default]
+description = "Run both e2e gates"
+depends = ["test"]

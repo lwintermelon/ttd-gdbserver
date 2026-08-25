@@ -1,0 +1,64 @@
+# One forward Delve session over the Go program: a goroutine frame, locals,
+# stack, source and instruction stepping, deep recursion across a goroutine
+# stack copy, a line breakpoint, and the unhandled nil dereference that ends
+# the recorded trace.
+#
+# Breakpoint ids are assigned in creation order, so each one is retired by id
+# once it has been observed; a left-over breakpoint would quietly cut the
+# later continues short and the script would never reach the panic.
+break main.main
+continue
+locals
+stack 5
+# one pinned worker frame: which goroutine runs first is scheduling-dependent,
+# so the condition picks the single worker whose argument is 0
+break main.consume if id == 0
+continue
+print id
+locals
+stack 6
+next
+print id
+# stepout returns to the caller of consume — inside the runtime here, which
+# is itself worth seeing
+stepout
+stack 3
+clear 2
+# A global written by the worker goroutines and read by the main goroutine
+# after the join. The value is only right if the replay accounts for writes
+# made by threads other than the one being queried: a fragment-local memory
+# view answers with the counter's pre-write image (0 instead of 54).
+break main.go:64
+continue
+print hits
+clear 3
+# deep recursion: 2 KiB frames force a goroutine stack copy, so a local
+# resolved after the move still has to read from the right stack
+break main.deep
+continue
+print n
+stack 4
+next
+next
+print pad[952]
+clear 4
+# a source-line breakpoint, which resolves through the line table rather than
+# a symbol
+break main.go:31
+continue
+print n
+stack 4
+print pad[0]
+clear 5
+# the nil dereference ends the recorded trace: the stop carries the hardware
+# exception, and the crash site's arguments are still readable
+break main.crash
+continue
+print n
+stack 5
+# The script stops at the fault on purpose. The next step crosses the point
+# where live Delve stops with `[unrecovered-panic] runtime.fatalpanic()` — a
+# stop that comes from a software breakpoint Delve inserts into the inferior,
+# which a read-only replay cannot have. The replay instead reaches the end of
+# the recording, so that stop is deliberately outside the forward comparison.
+exit

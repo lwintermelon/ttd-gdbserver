@@ -1,0 +1,186 @@
+Type 'help' for list of commands.
+Breakpoint 1 set at 0xADDR for main.main() <PATH>/main.go:46
+> [Breakpoint 1] main.main() <PATH>/main.go:46 (hits goroutine(N):1 total:1) (PC: 0xADDR)
+    41:	//go:noinline
+    42:	func crash(n *node) int {
+    43:		return n.next.val
+    44:	}
+    45:
+=>  46:	func main() {
+    47:		var wg sync.WaitGroup
+    48:		var hits atomic.Int64
+    49:		chans := make([]chan int, workers)
+    50:
+    51:		for i := 0; i < workers; i++ {
+(no locals)
+0  0xADDR in main.main
+   at <PATH>/main.go:46
+1  0xADDR in runtime.main
+   at <PATH>/proc.go:302
+2  0xADDR in runtime.goexit
+   at <PATH>/asm_amd64.s:1264
+Breakpoint 2 set at 0xADDR for main.consume() <PATH>/main.go:19
+> [Breakpoint 2] main.consume() <PATH>/main.go:19 (hits goroutine(N):1 total:1) (PC: 0xADDR)
+    14:
+    15:	const workers = 3
+    16:	const perWorker = 4
+    17:
+    18:	//go:noinline
+=>  19:	func consume(id int, in <-chan int, hits *atomic.Int64, wg *sync.WaitGroup) {
+    20:		defer wg.Done()
+    21:		for v := range in {
+    22:			hits.Add(int64(v))
+    23:		}
+    24:	}
+0
+(no locals)
+0  0xADDR in main.consume
+   at <PATH>/main.go:19
+1  0xADDR in main.main.gowrap1
+   at <PATH>/main.go:54
+2  0xADDR in runtime.goexit
+   at <PATH>/asm_amd64.s:1264
+> main.consume() <PATH>/main.go:20 (PC: 0xADDR)
+    15:	const workers = 3
+    16:	const perWorker = 4
+    17:
+    18:	//go:noinline
+    19:	func consume(id int, in <-chan int, hits *atomic.Int64, wg *sync.WaitGroup) {
+=>  20:		defer wg.Done()
+    21:		for v := range in {
+    22:			hits.Add(int64(v))
+    23:		}
+    24:	}
+    25:
+0
+> runtime.goexit() <PATH>/asm_amd64.s:1265 (PC: 0xADDR)
+Warning: debugging optimized function
+Values returned:
+  1260:
+  1261:	// The top-most function running on a goroutine
+  1262:	// returns to goexit+PCQuantum.
+  1263:	TEXT runtime·goexit(SB),NOSPLIT|TOPFRAME|NOFRAME,$0-0
+  1264:		BYTE	$0xADDR	// NOP
+=>1265:		CALL	runtime·goexit1(SB)	// does not return
+  1266:		// traceback from goexit1 must hit code range of goexit
+  1267:		BYTE	$0xADDR	// NOP
+  1268:
+  1269:	// This is called from .init_array and follows the platform, not Go, ABI.
+  1270:	TEXT runtime·addmoduledata(SB),NOSPLIT,$0-0
+0  0xADDR in runtime.goexit
+   at <PATH>/asm_amd64.s:1265
+Breakpoint 3 set at 0xADDR for main.main() <PATH>/main.go:64
+> [Breakpoint 3] main.main() <PATH>/main.go:64 (hits goroutine(N):1 total:1) (PC: 0xADDR)
+    59:			}
+    60:			close(chans[i])
+    61:		}
+    62:		wg.Wait()
+    63:
+=>  64:		fmt.Println("hits:", hits.Load())
+    65:		fmt.Println("deep:", deep(3000))
+    66:
+    67:		head := &node{next: &node{val: 7}}
+    68:		fmt.Println("crash:", crash(head.next))
+    69:	}
+sync/atomic.Int64 {
+	_: sync/atomic.noCopy {},
+	_: sync/atomic.align64 {},
+	v: 54,}
+Breakpoint 4 set at 0xADDR for main.deep() <PATH>/main.go:27
+> [Breakpoint 4] main.deep() <PATH>/main.go:27 (hits goroutine(N):1 total:1) (PC: 0xADDR)
+    22:			hits.Add(int64(v))
+    23:		}
+    24:	}
+    25:
+    26:	//go:noinline
+=>  27:	func deep(n int) int {
+    28:		var pad [2048]byte
+    29:		pad[n%len(pad)] = byte(n)
+    30:		if n == 0 {
+    31:			return int(pad[0])
+    32:		}
+3000
+0  0xADDR in main.deep
+   at <PATH>/main.go:27
+1  0xADDR in main.main
+   at <PATH>/main.go:65
+2  0xADDR in runtime.main
+   at <PATH>/proc.go:302
+3  0xADDR in runtime.goexit
+   at <PATH>/asm_amd64.s:1264
+> main.deep() <PATH>/main.go:28 (PC: 0xADDR)
+    23:		}
+    24:	}
+    25:
+    26:	//go:noinline
+    27:	func deep(n int) int {
+=>  28:		var pad [2048]byte
+    29:		pad[n%len(pad)] = byte(n)
+    30:		if n == 0 {
+    31:			return int(pad[0])
+    32:		}
+    33:		return deep(n-1) + int(pad[1])
+> main.deep() <PATH>/main.go:29 (PC: 0xADDR)
+    24:	}
+    25:
+    26:	//go:noinline
+    27:	func deep(n int) int {
+    28:		var pad [2048]byte
+=>  29:		pad[n%len(pad)] = byte(n)
+    30:		if n == 0 {
+    31:			return int(pad[0])
+    32:		}
+    33:		return deep(n-1) + int(pad[1])
+    34:	}
+0
+Breakpoint 5 set at 0xADDR for main.deep() <PATH>/main.go:31
+> [Breakpoint 5] main.deep() <PATH>/main.go:31 (hits goroutine(N):1 total:1) (PC: 0xADDR)
+    26:	//go:noinline
+    27:	func deep(n int) int {
+    28:		var pad [2048]byte
+    29:		pad[n%len(pad)] = byte(n)
+    30:		if n == 0 {
+=>  31:			return int(pad[0])
+    32:		}
+    33:		return deep(n-1) + int(pad[1])
+    34:	}
+    35:
+    36:	type node struct {
+0
+0  0xADDR in main.deep
+   at <PATH>/main.go:31
+1  0xADDR in main.deep
+   at <PATH>/main.go:33
+2  0xADDR in main.deep
+   at <PATH>/main.go:33
+3  0xADDR in main.deep
+   at <PATH>/main.go:33
+4  0xADDR in main.deep
+   at <PATH>/main.go:33
+(truncated)
+0
+Breakpoint 6 set at 0xADDR for main.crash() <PATH>/main.go:42
+> [Breakpoint 6] main.crash() <PATH>/main.go:42 (hits goroutine(N):1 total:1) (PC: 0xADDR)
+    37:		next *node
+    38:		val  int
+    39:	}
+    40:
+    41:	//go:noinline
+=>  42:	func crash(n *node) int {
+    43:		return n.next.val
+    44:	}
+    45:
+    46:	func main() {
+    47:		var wg sync.WaitGroup
+(*main.node)(0xADDR)
+*main.node {
+	next: *main.node nil,
+	val: 7,}
+0  0xADDR in main.crash
+   at <PATH>/main.go:42
+1  0xADDR in main.main
+   at <PATH>/main.go:68
+2  0xADDR in runtime.main
+   at <PATH>/proc.go:302
+3  0xADDR in runtime.goexit
+   at <PATH>/asm_amd64.s:1264

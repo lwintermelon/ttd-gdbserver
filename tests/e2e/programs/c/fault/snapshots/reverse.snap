@@ -1,0 +1,41 @@
+warning: remote target does not support file transfer, attempting to access files from local filesystem.
+0x00007ff950cff090 in ntdll!LdrInitializeThunk () from <PATH>/ntdll.dll
+Breakpoint 1 at 0x7ff717b314d0: file fault.c, line 22.
+Breakpoint 1, main () at fault.c:22
+22	    printf("before fault\n");
+$1 = 0x7ff717b314d0
+23	    fflush(stdout);
+24	    return wrapper(3);
+Program received signal SIGSEGV, Segmentation fault.
+0x00007ff717b3149b in fault () at fault.c:13
+13	    return *g_bad;
+$2 = 0x7ff717b3149b
+#0  0x00007ff717b3149b in fault () at fault.c:13
+#1  0x00007ff717b314b8 in wrapper (n=3) at fault.c:18
+#2  0x00007ff717b314ff in main () at fault.c:24
+No locals.
+=> 0x7ff717b3149b <fault+11>:	mov    (%rax),%eax
+#1  0x00007ff717b314b8 in wrapper (n=3) at fault.c:18
+18	    return fault() + value;
+n = 3
+value = 4
+0x1c89bffc60:	0x00000217141b8a60	0x00007ff94e2fc0b7
+0x1c89bffc70:	0x00007ff94e419800	0x0000001c89bffc00
+#0  0x00007ff717b3149b in fault () at fault.c:13
+13	    return *g_bad;
+0x00007ff717b3149b	13	    return *g_bad;
+$3 = 0x7ff717b3149b
+Program received signal SIGSEGV, Segmentation fault.
+0x00007ff717b3149b in fault () at fault.c:13
+13	    return *g_bad;
+$4 = 0x7ff717b3149b
+#0  0x00007ff717b3149b in fault () at fault.c:13
+#1  0x00007ff717b314b8 in wrapper (n=3) at fault.c:18
+#2  0x00007ff717b314ff in main () at fault.c:24
+Breakpoint 1, main () at fault.c:22
+22	    printf("before fault\n");
+$5 = 0x7ff717b314d0
+#0  main () at fault.c:22
+exception events: 1 (showing up to 20)
+0xc0000005 at 0x0 (pc 0x7ff717b3149b) pos 2a:0
+[Inferior 1 (process 1) detached]

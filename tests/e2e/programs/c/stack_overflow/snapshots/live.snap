@@ -1,0 +1,35 @@
+19	    fflush(stdout);
+20	    return recurse(0);
+Breakpoint 2 at 0xADDR: file stack_overflow.c, line 12.
+Breakpoint hit, recurse (n=3) at stack_overflow.c:12
+12	    memset((void *)pad, n & 0xADDR, sizeof(pad));
+n = 3
+#0  recurse (n=3) at stack_overflow.c:12
+#1  0xADDR in recurse (n=2) at stack_overflow.c:14
+#2  0xADDR in recurse (n=1) at stack_overflow.c:14
+#3  0xADDR in recurse (n=0) at stack_overflow.c:14
+#4  0xADDR in main () at stack_overflow.c:20
+#2  0xADDR in recurse (n=1) at stack_overflow.c:14
+14	    return recurse(n + 1) + v;
+n = 1
+pad = '\001' <repeats 4096 times>
+v = 1
+#0  recurse (n=3) at stack_overflow.c:12
+12	    memset((void *)pad, n & 0xADDR, sizeof(pad));
+0xADDR	12	    memset((void *)pad, n & 0xADDR, sizeof(pad));
+$1 = 0xADDR
+0xADDR	12	    memset((void *)pad, n & 0xADDR, sizeof(pad));
+$2 = 0xADDR
+Breakpoint 3 at 0xADDR: file stack_overflow.c, line 12.
+Breakpoint hit, recurse (n=200) at stack_overflow.c:12
+12	    memset((void *)pad, n & 0xADDR, sizeof(pad));
+n = 200
+#0  recurse (n=200) at stack_overflow.c:12
+#1  0xADDR in recurse (n=199) at stack_overflow.c:14
+#2  0xADDR in recurse (n=198) at stack_overflow.c:14
+#3  0xADDR in recurse (n=197) at stack_overflow.c:14
+#1  0xADDR in recurse (n=199) at stack_overflow.c:14
+14	    return recurse(n + 1) + v;
+n = 199
+#0  recurse (n=200) at stack_overflow.c:12
+12	    memset((void *)pad, n & 0xADDR, sizeof(pad));

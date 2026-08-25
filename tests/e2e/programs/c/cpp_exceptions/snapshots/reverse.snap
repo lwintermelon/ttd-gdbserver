@@ -1,0 +1,37 @@
+warning: remote target does not support file transfer, attempting to access files from local filesystem.
+0x00007ff950cff090 in ntdll!LdrInitializeThunk () from <PATH>/ntdll.dll
+Breakpoint 1 at 0x7ff63f361591: file cpp_exceptions.cpp, line 29.
+Thread 1 hit Breakpoint 1, main () at cpp_exceptions.cpp:29
+29	    std::thread t(worker);
+Catchpoint 2 (throw)
+[New Thread 1.32280]
+[Switching to Thread 1.32280]
+Thread 3 hit Catchpoint 2 (exception thrown), 0x00007ff8e14a2827 in libstdc++-6!.cxa_throw () from <PATH>/libstdc++-6.dll
+#0  0x00007ff8e14a2827 in libstdc++-6!.cxa_throw () from <PATH>/libstdc++-6.dll
+#1  0x00007ff63f3614e0 in thrower (x=-1) at cpp_exceptions.cpp:15
+#2  0x00007ff63f36151a in worker () at cpp_exceptions.cpp:22
+#3  0x00007ff63f3689cd in std::__invoke_impl<void, void (*)()> (__f=@0x258c8bd1f68: 0x7ff63f361505 <worker()>) at <PATH>/invoke.h:63
+No symbol table info available.
+$1 = 0x7ff8e14a2827
+Catchpoint 3 (catch)
+Thread 3 hit Catchpoint 3 (exception caught), 0x00007ff8e14a21e5 in libstdc++-6!.cxa_begin_catch () from <PATH>/libstdc++-6.dll
+#0  0x00007ff8e14a21e5 in libstdc++-6!.cxa_begin_catch () from <PATH>/libstdc++-6.dll
+#1  0x00007ff63f361532 in worker () at cpp_exceptions.cpp:23
+#2  0x00007ff63f3689cd in std::__invoke_impl<void, void (*)()> (__f=@0x258c8bd1f68: 0x7ff63f361505 <worker()>) at <PATH>/invoke.h:63
+#3  0x00007ff63f368a73 in std::__invoke<void (*)()> (__fn=@0x258c8bd1f68: 0x7ff63f361505 <worker()>) at <PATH>/invoke.h:98
+$2 = 0x7ff8e14a21e5
+Thread 3 hit Catchpoint 2 (exception thrown), 0x00007ff8e14a2827 in libstdc++-6!.cxa_throw () from <PATH>/libstdc++-6.dll
+$3 = 0x7ff8e14a2827
+#0  0x00007ff8e14a2827 in libstdc++-6!.cxa_throw () from <PATH>/libstdc++-6.dll
+#1  0x00007ff63f3614e0 in thrower (x=-1) at cpp_exceptions.cpp:15
+#2  0x00007ff63f36151a in worker () at cpp_exceptions.cpp:22
+#3  0x00007ff63f3689cd in std::__invoke_impl<void, void (*)()> (__f=@0x258c8bd1f68: 0x7ff63f361505 <worker()>) at <PATH>/invoke.h:63
+0x00007ff8e14a2823 in libstdc++-6!.cxa_throw () from <PATH>/libstdc++-6.dll
+$4 = 0x7ff8e14a2823
+Thread 3 hit Catchpoint 2 (exception thrown), 0x00007ff8e14a2827 in libstdc++-6!.cxa_throw () from <PATH>/libstdc++-6.dll
+$5 = 0x7ff8e14a2827
+[Thread 1.32280 exited]
+Thread 1 received signal SIGKILL, Killed.
+[Switching to Thread 1.32092]
+0x00007ff950d822d2 in ntdll!ZwTerminateProcess () from <PATH>/ntdll.dll
+[Inferior 1 (process 1) exited normally]

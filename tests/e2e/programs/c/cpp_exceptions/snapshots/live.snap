@@ -1,0 +1,5 @@
+Breakpoint hit, main () at cpp_exceptions.cpp:39
+39	    std::printf("value: %d\n", value);
+$1 = -1
+40	    return value;
+41	}

@@ -1,0 +1,22 @@
+# Go -> C -> Go callback then a fault in the C frames: the exported marker
+# frame, the mixed Go/C stack at the fault, and the hardware exception the
+# recording carries.
+#
+# Delve expressions are Go expressions: `$pc` is a gdb-ism and is a parse
+# error here. The register file is replay-only (`regs` there): the replay
+# exposes the full target description, including `Gs_base`, while a native
+# live inferior prints a shorter set, so the two runs legitimately differ.
+break main.main
+continue
+stack 4
+break main.goMarker
+continue
+args
+locals
+stack 6
+# step out of the Go callback and back into the C trampoline frame
+stepout
+stack 6
+continue
+stack 8
+exit

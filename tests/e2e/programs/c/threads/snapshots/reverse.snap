@@ -1,0 +1,63 @@
+warning: remote target does not support file transfer, attempting to access files from local filesystem.
+0x00007ff950cff090 in ntdll!LdrInitializeThunk () from <PATH>/ntdll.dll
+Breakpoint 1 at 0x7ff72ca51553: file threads.c, line 31.
+Thread 1 hit Breakpoint 1, main () at threads.c:31
+31	    for (int i = 0; i < 2; i++) {
+  Id   Target Id                                        Frame
+* 1    Thread 1.34748 (UTID 2 (OS 0x87bc); pos 26:1af9) main () at threads.c:31
+  2    Thread 1.31472 (UTID 5 (OS 0x7af0); pos 11e:0)   0x00007ff950d82754 in ntdll!ZwProtectVirtualMemory () from <PATH>/ntdll.dll
+Hardware watchpoint 2: shared
+[New Thread 1.30036]
+[New Thread 1.23224]
+[Switching to Thread 1.30036]
+Thread 3 hit Hardware watchpoint 2: shared
+Old value = 0
+New value = 2
+worker (arg=0x1) at threads.c:20
+20	        int seen = shared;
+$1 = 2
+#0  worker (arg=0x1) at threads.c:20
+#1  0x00007ff92a465f0b in pthread_create_wrapper () from <PATH>/libwinpthread-1.dll
+#2  0x00007ff94e30cd30 in wcsrchr () from <PATH>/ucrtbase.dll
+#3  0x00007ff94f84dda7 in KERNEL32!BaseThreadInitThunk () from <PATH>/KERNEL32.DLL
+Thread 3 hit Hardware watchpoint 2: shared
+Old value = 2
+New value = 4
+worker (arg=0x1) at threads.c:20
+20	        int seen = shared;
+$2 = 4
+#0  worker (arg=0x1) at threads.c:20
+#1  0x00007ff92a465f0b in pthread_create_wrapper () from <PATH>/libwinpthread-1.dll
+#2  0x00007ff94e30cd30 in wcsrchr () from <PATH>/ucrtbase.dll
+#3  0x00007ff94f84dda7 in KERNEL32!BaseThreadInitThunk () from <PATH>/KERNEL32.DLL
+Thread 3 hit Hardware watchpoint 2: shared
+Old value = 4
+New value = 2
+worker (arg=0x1) at threads.c:20
+20	        int seen = shared;
+$3 = 2
+  Id   Target Id                                        Frame
+  1    Thread 1.34748 (UTID 2 (OS 0x87bc); pos 276:0)   0x00007ff950d81dd4 in ntdll!ZwWaitForSingleObject () from <PATH>/ntdll.dll
+  2    Thread 1.31472 (UTID 5 (OS 0x7af0); pos 155:1)   0x00007ff950d85a24 in ntdll!ZwWaitForWorkViaWorkerFactory () from <PATH>/ntdll.dll
+* 3    Thread 1.30036 (UTID 4 (OS 0x7554); pos 21d:1e0) worker (arg=0x1) at threads.c:20
+  4    Thread 1.23224 (UTID 3 (OS 0x5ab8); pos 21e:0)   0x00007ff950c3ef6d in ntdll!RtlVirtualUnwind2 () from <PATH>/ntdll.dll
+[Switching to thread 2 (Thread 1.31472)]
+#0  0x00007ff950d85a24 in ntdll!ZwWaitForWorkViaWorkerFactory () from <PATH>/ntdll.dll
+#0  0x00007ff950d85a24 in ntdll!ZwWaitForWorkViaWorkerFactory () from <PATH>/ntdll.dll
+#1  0x00007ff950c44d0e in ntdll!TpCallbackMayRunLong () from <PATH>/ntdll.dll
+#2  0x00007ff94f84dda7 in KERNEL32!BaseThreadInitThunk () from <PATH>/KERNEL32.DLL
+No symbol table info available.
+Thread 3 received signal SIGTRAP, Trace/breakpoint trap.
+[Switching to Thread 1.30036]
+0x00007ff72ca514d8 in worker (arg=0x1) at threads.c:20
+20	        int seen = shared;
+$4 = 0x7ff72ca514d8
+20	        int seen = shared;
+$5 = 0x7ff72ca514d2
+[Switching to thread 1 (Thread 1.34748)]
+#0  0x00007ff950d81dd4 in ntdll!ZwWaitForSingleObject () from <PATH>/ntdll.dll
+#0  0x00007ff950d81dd4 in ntdll!ZwWaitForSingleObject () from <PATH>/ntdll.dll
+#1  0x00007ff94de2be9f in WaitForSingleObjectEx () from <PATH>/KERNELBASE.dll
+#2  0x00007ff92a4679ce in pthread_join () from <PATH>/libwinpthread-1.dll
+$6 = 2
+[Inferior 1 (process 1) detached]

@@ -1,0 +1,24 @@
+Breakpoint 2 at 0xADDR: file threads.c, line 16.
+Breakpoint hit, worker (arg=0xADDR) at threads.c:16
+16	    int id = (int)(intptr_t)arg;
+arg = 0xADDR
+#0  worker (arg=0xADDR) at threads.c:16
+#1  0xADDR in pthread_create_wrapper ()
+#2  0xADDR in wcsrchr ()
+#3  0xADDR in KERNEL32!BaseThreadInitThunk ()
+17	    for (int i = 0; i < 6; i++) {
+$1 = 0
+18	        pthread_mutex_lock(&lock);
+#0  worker (arg=0xADDR) at threads.c:18
+#1  0xADDR in pthread_create_wrapper ()
+#2  0xADDR in wcsrchr ()
+$2 = (void *) 0xADDR
+0xADDR in pthread_create_wrapper ()
+Value returned is $3 = (void *) 0xADDR
+#0  0xADDR in pthread_create_wrapper ()
+#1  0xADDR in wcsrchr ()
+#2  0xADDR in KERNEL32!BaseThreadInitThunk ()
+Breakpoint 3 at 0xADDR: file threads.c, line 38.
+Breakpoint hit, main () at threads.c:38
+38	    return shared;
+$4 = 18

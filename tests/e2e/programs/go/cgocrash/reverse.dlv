@@ -1,0 +1,24 @@
+# The cgo crash walked backwards: the exported marker frame, the fault stack
+# across the Go/C boundary, an instruction round trip through it, and the
+# full register file (replay-only: the target description includes `Gs_base`,
+# which is how Delve finds a goroutine's `g`).
+break main.goMarker
+continue
+args
+locals
+stack 6
+regs
+step
+bt 8
+rev step-instruction
+step-instruction
+checkpoint c1
+step
+restart c1
+stack 5
+# The recorded fault: Delve reports the Windows exception code behind the
+# SIGSEGV, which is what makes a TTD replay as informative as a live crash.
+continue
+stack 8
+locals
+exit
