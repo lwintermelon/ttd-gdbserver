@@ -1,0 +1,21 @@
+[package]
+name = "ttd-gdbserver"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+thiserror = "2"
+log = "0.4"
+env_logger = "0.11"
+clap = { version = "4", features = ["derive"] }
+# GDB RSP frontend is built on gdbstub, patched with an `UnknownPacket`
+# target hook so Delve's qRRCmd can be handled while gdbstub owns all
+# standard protocol machinery. The three patches live on the `ttd-dbg`
+# branch of the fork below (each also submitted upstream as a separate PR).
+gdbstub = { git = "https://github.com/lwintermelon/gdbstub", branch = "ttd-dbg", features = ["std"] }
+gdbstub_arch = { git = "https://github.com/lwintermelon/gdbstub", branch = "ttd-dbg" }
+quick-xml = { version = "0.42", default-features = false, features = ["serialize"] }
+
+[build-dependencies]
+cc = "1"
+bindgen = "0.72"
