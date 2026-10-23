@@ -131,11 +131,12 @@ GDB RSP 引擎是 [gdbstub](https://github.com/lwintermelon/gdbstub)，以 `ttd-
 分支的 git 依赖引入——不在 crates.io 上，因为该分支承载了本服务需要的协议
 扩展。
 
-TTD 绑定是本项目自己的薄 C++ 接口（`csrc/ttd_sys.hpp`）：bindgen 把
-`OUT_DIR` 里的生成结果交给 `src/ttd_sys/mod.rs` 用 `include!` 引入，再在
-`src/ttd/` 上做安全封装。上游 [`ttd`](https://github.com/hugsy/ttd-rust) 绑定
-是起点，但它没有调试器前端需要的观察点回调、中断、内存策略、区间查询和按线程
-取上下文；塑造这层 shim 的约束见
+TTD 边界是 [`cxx`](https://cxx.rs) bridge：`src/ttd/cpp/ttd_cxx.hpp` /
+`ttd_cxx.cpp` 持有 SDK 句柄并暴露类型化的 C++ 接口，`src/ttd/ffi.rs` 是桥，
+`src/ttd/` 是其余代码使用的安全封装。所有权、回调、内存 slice 和普通值结构体
+都走 bridge，Rust 侧不再有 bindgen 生成的 raw FFI 层。上游
+[`ttd`](https://github.com/hugsy/ttd-rust) 绑定是起点，但它没有调试器前端需要
+的观察点回调、中断、内存策略、区间查询和按线程取上下文；塑造这层接口的约束见
 [`doc/ttd-internals.md` §13](doc/ttd-internals.md)（英文）。
 
 ## 测试

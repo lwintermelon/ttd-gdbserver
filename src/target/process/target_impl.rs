@@ -276,7 +276,7 @@ impl DebugTarget for TtdProcess {
                 if u64::from(info.Id) == thread_id {
                     return Some(ThreadExtraInfoData {
                         unique_id: info.UniqueId,
-                        current_position: TtdPosition::from(entry.current_position),
+                        current_position: entry.current_position,
                         teb: c.teb_address_of(os_tid),
                     });
                 }

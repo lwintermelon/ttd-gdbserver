@@ -162,7 +162,7 @@ void SetDefaultMemoryPolicy(QueryMemoryPolicy);
 | `GloballyAggressive` | walks the index for the value at the queried position |
 | `InFragmentAggressive` | looks into the current fragment, including the future |
 
-Cursors are created with **`GloballyAggressive`** (`csrc/ttd_sys.cpp`).
+Cursors are created with **`GloballyAggressive`** (`src/ttd/cpp/ttd_cxx.cpp`).
 `Default` is wrong for a debugger: it may hide writes observed only by other
 threads. `GloballyConservative` is wrong in the other direction: it returned a
 heap cell's image from a position *before* any of its writes (`&main.hits` at
@@ -391,13 +391,13 @@ When a replay looks wrong, decide which layer is lying before changing code:
 
 ## 13. The bindings this project uses
 
-`csrc/ttd_sys.hpp` is a thin C++ surface over `TTD::Replay`: two classes
+`src/ttd/cpp/ttd_cxx.hpp` is a typed C++ surface over `TTD::Replay`: two classes
 (`Engine`, `Cursor`) that hold the SDK's own `UniqueReplayEngine`/`UniqueCursor`
-and forward one call each, plus free functions for the operations whose
-by-value result a member function cannot return to Rust (see below). bindgen
-reads that header, so every struct and enum it mentions is the SDK's own type
-with its real layout; `src/ttd_sys/` is the generated half and `src/ttd/` is
-the safe wrapper.
+and convert the SDK's COM-shaped results into plain structs. `src/ttd/ffi.rs`
+is the [`cxx`](https://cxx.rs) bridge; `src/ttd/` is the safe wrapper. No SDK
+struct layout crosses the boundary: position/thread/module/exception records are
+plain cxx shared structs, and amd64 register state is serialized as a fixed
+little-endian word stream that Rust decodes.
 
 Surface this project needs beyond plain replay:
 
@@ -411,23 +411,19 @@ Surface this project needs beyond plain replay:
 | per-thread context | `amd64_context(tid)`, `teb_address_of(tid)`, `active_thread(idx)` |
 | event/exception masks | `set_event_mask` / `set_exception_mask` |
 
-Three constraints shaped that shim:
+Three constraints shaped that bridge:
 
 - **SDK interfaces are not exposed.** TTD's API is COM-shaped (pure virtual
-  classes), and bindgen renders those as an opaque vtable rather than callable
-  methods, so nothing in Rust can call them directly. The classes are the
-  thinnest layer that can.
-- **Large by-value results are free functions.** MSVC passes a member
-  function's hidden return buffer in RCX after `this`; Rust's `extern "C"`
-  expects it in RCX first. A member function returning a large struct is
-  therefore uncallable from Rust (it crashes on entry, `this` being garbage),
-  while the same function declared free works. That is why
-  `ReplayForward`/`ReplayBackward`, the memory queries and the register-context
-  getters are namespace-level functions.
-- **Interpretation stays in Rust.** The shim hands back the SDK's
-  architecture-agnostic `RegisterContext`; the wrapper picks the amd64 layout
-  from the trace's `ProcessorArchitecture`, and turns the SDK's
-  `DataAccessType` enum into an access mask.
+  classes), so the C++ wrapper is the layer that calls them; cxx only sees the
+  wrapper's typed methods.
+- **No SDK layout crosses cxx.** cxx shared structs carry values, `&mut [u8]`
+  carries memory, and the C++ side serializes `AMD64_CONTEXT` into a fixed word
+  stream. That keeps the ABI in one wrapper instead of relying on generated
+  struct layouts.
+- **Interpretation stays in Rust.** The wrapper reports the trace's
+  `ProcessorArchitecture` and the serialized register words; the Rust wrapper
+  picks the amd64 layout and turns the SDK's `DataAccessType` enum into an
+  access mask.
 
 `ReplayCursor` owns an `Arc` of the engine handle, so there is no lifetime
 parameter and a cursor cannot outlive the object it drives. The one thing this

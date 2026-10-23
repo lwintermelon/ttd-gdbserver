@@ -339,7 +339,7 @@ mod tests {
         regs.EFlags = 0x202;
         regs.SegCs = 0x33;
         regs.SegGs = 0x2B;
-        regs.__bindgen_anon_1.FltSave = flt;
+        regs.fpu.FltSave = flt;
         regs
     }
 

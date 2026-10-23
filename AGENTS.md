@@ -36,8 +36,7 @@ symbols. The target is read-only (no memory/register writes).
 
 | Module | Files | Responsibility |
 |--------|-------|---------------|
-| `ttd_sys/` | `ttd_sys/mod.rs` | Raw FFI: `build.rs` runs bindgen over `csrc/ttd_sys.hpp` into `OUT_DIR`, which `mod.rs` `include!`s. Nothing here interprets what it returns. |
-| `ttd/` | `ttd.rs`, `ttd/{engine,cursor,callback,types,error,interrupt}.rs` | The safe wrapper. `engine.rs`/`cursor.rs` own the SDK handles and expose positions, memory, threads, watchpoints and callbacks; `types.rs` is the value vocabulary (`TtdPosition`, `TtdReplayResult`, …) and the SDK constant masks; `callback.rs` escalates panics across the FFI boundary; `interrupt.rs` is the cross-thread ^C channel. Together with `ttd_sys/` this is where the crate's `unsafe` lives. |
+| `ttd/` | `ttd.rs`, `ttd/{ffi,engine,cursor,callback,types,error,interrupt}.rs` | `ffi.rs` is the cxx bridge to `ttd/cpp/ttd_cxx.*`; `engine.rs`/`cursor.rs` own the SDK handles and expose positions, memory, threads, watchpoints and callbacks; `types.rs` is the value vocabulary (`TtdPosition`, `TtdReplayResult`, …) and the SDK constant masks; `callback.rs` escalates panics across the FFI boundary; `interrupt.rs` is the cross-thread ^C channel. This is where the crate's `unsafe` lives. |
 | `target/` | `target.rs` (trait + re-exports), `target/{module_info,thread_extra_info,diagnostics,stats}.rs` (data types), `target/process.rs` + `target/process/{execution,target_impl}.rs`, `target/{cursors,breakpoint_state,threads,breakpoint,watchpoint,trace_metadata,error,stop_reason}.rs` | Debug target layer: `DebugTarget` + `TtdProcess`. One primary type per file. |
 | `gdb/` | `gdb.rs`, `gdb/{regs,mapping,commands,resume,runner,session,packet,xml,pe,checkpoint,monitor}.rs`, `gdb/target/{base,breakpoints,extended,description,memory_map,thread_info,monitor_cmd,unknown}.rs` + `gdb/target/test_support.rs` (test-only) | GDB RSP frontend (on gdbstub, Delve-gdbserial-compatible) |
 | `tests/common/` | `mod.rs`, `rsp.rs`, `harness.rs`, `mock_target.rs` | Shared integration-test support, pulled in by every test crate via `mod common;` |
@@ -127,7 +126,7 @@ like a thread stopped at address 0.
 ### Thread-local stack/TEB memory
 `ICursorView::QueryMemoryBuffer` is position/thread-sensitive: once the
 persistent cursor is adopted at the stopped thread/position, the cursor's
-`GloballyAggressive` policy (set in `Cursor`'s constructor, `csrc/ttd_sys.cpp`)
+`GloballyAggressive` policy (set in `Cursor`'s constructor, `src/ttd/cpp/ttd_cxx.cpp`)
 returns OS stack and TEB pages — no snapshot cache needed. GDB's memory map is deliberately not
 advertised (see `target/memory_map.rs` above).
 
@@ -271,8 +270,8 @@ ttd-gdbserver <trace.run> -v                        # -v: crate debug logs; -vv:
 ## Dependencies
 
 - `ctrlc`, `thiserror`, `log`/`env_logger`, `clap`, `quick-xml` (qXfer XML)
-- `cc` + `bindgen` (build-deps) — compile `csrc/ttd_sys.cpp` against the SDK
-  and generate `src/ttd_sys/` from `csrc/ttd_sys.hpp`.
+- `cxx` + `cxx-build` — the typed bridge to `src/ttd/cpp/ttd_cxx.cpp`; no bindgen.
+  `build.rs` compiles the C++ wrapper and generates the bridge glue.
 - TTD SDK: `Microsoft.TimeTravelDebugging.Apis` NuGet via `TTD_SDK_DIR`;
   runtime DLLs (`TTDReplay.dll`) on `PATH`
 - `gdbstub` + `gdbstub_arch` — a git dependency on branch `ttd-dbg` of
@@ -286,43 +285,26 @@ ttd-gdbserver <trace.run> -v                        # -v: crate debug logs; -vv:
 
 ## Bindings
 
-`csrc/ttd_sys.hpp` declares a thin C++ surface: two classes (`Engine`,
-`Cursor`) holding the SDK's `UniqueReplayEngine`/`UniqueCursor` and forwarding
-one call each, plus a handful of free functions. It includes the SDK headers
-directly, so every struct and enum in its signatures is the SDK's own and
-bindgen gives Rust their real layout. Deliberate limits:
+`src/ttd/cpp/ttd_cxx.hpp` declares the typed C++ surface: two classes (`Engine`,
+`Cursor`) holding the SDK's `UniqueReplayEngine`/`UniqueCursor`, plus value
+conversions. `src/ttd/ffi.rs` is the cxx bridge; `build.rs` compiles the
+wrapper and generates the bridge glue. Deliberate limits:
 
-- **Interfaces are not exposed.** TTD's API is COM-shaped (pure virtual), and
-  bindgen emits an opaque vtable for those, so SDK methods are unreachable from
-  Rust; the classes are the thinnest thing that can forward them. Non-virtual
-  member functions do get Rust methods from bindgen, which is why the surface
-  is classes rather than a pile of `extern "C"` functions.
-- **Large by-value results go through free functions.** MSVC passes a member
-  function's hidden return buffer in RCX *after* `this`, while Rust's
-  `extern "C"` expects it in RCX first, so a member function returning a big
-  struct cannot be called from Rust at all (`GetCrossPlatformContext`,
-  `ReplayForward`, the memory queries). Plain functions follow the C
-  convention, so those are declared free.
-- **Interpretation stays in Rust.** The shim returns the SDK's
-  architecture-agnostic `RegisterContext`; `ttd/cursor.rs` picks the amd64
-  layout from the trace's `ProcessorArchitecture`. Likewise access *types* are
-  turned into masks in Rust.
-- **The generated bindings live in `OUT_DIR`**, the standard layout:
-  `src/ttd_sys/mod.rs` is `include!(concat!(env!("OUT_DIR"),
-  "/ttd_sys_bindings.rs"))`. Writing outside `OUT_DIR` would break `cargo
-  package` (git-ignored files are not in the tarball) and fail on read-only
-  registry checkouts. To read the generated code, open
-  `target/<profile>/build/ttd-gdbserver-<hash>/out/ttd_sys_bindings.rs`;
-  `build.rs` only rewrites it when the content changes, so a no-op build does
-  not look dirty to rustc.
-- `src/ttd/types.rs` — renames SDK value types to `Ttd*` and gives the SDK's
-  scalars Rust shapes: `EventType` and `DataAccessType` are enums (each
-  carrying an `Unknown(u8)` arm so an unexpected value stays inspectable),
-  while `DataAccessMask`, `EventMask` and `ExceptionMask` are `bitflags` types.
-  Their constants come from the generated bindings, so an SDK renumbering
-  cannot silently desynchronise the two.
-- `#![deny(unsafe_code)]` in `src/lib.rs`; `src/ttd` and `src/ttd_sys` opt back
-  in.
+- **SDK interfaces are not exposed.** TTD's API is COM-shaped (pure virtual),
+  so the C++ wrapper is the only layer that calls it; cxx sees ordinary
+  methods.
+- **No SDK layout crosses cxx.** Position/thread/module/exception records are
+  cxx shared structs; memory is `&mut [u8]`; amd64 register state is serialized
+  into a fixed little-endian word stream (`81` words) and decoded in
+  `ttd/types.rs`. The C++ ABI stays in `ttd_cxx.cpp`.
+- **Interpretation stays in Rust.** `ttd/cursor.rs` picks the amd64 layout from
+  the trace's `ProcessorArchitecture`; access *types* become masks in Rust.
+- `src/ttd/types.rs` — value types (`TtdPosition`, `TtdThreadInfo`,
+  `TtdX64Regs`, …). Simple 1:1 records are re-exported cxx shared structs;
+  semantic records stay separate. `EventType` and `DataAccessType` carry
+  `Unknown(u8)`; `DataAccessMask`, `EventMask` and `ExceptionMask` are
+  `bitflags`.
+- `#![deny(unsafe_code)]` in `src/lib.rs`; only `src/ttd` opts back in.
 - x86_64 only for now; designed for ARM64 via conditional compilation.
 
 ## Code style

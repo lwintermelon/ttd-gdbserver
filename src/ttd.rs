@@ -1,7 +1,7 @@
 //! TTD Replay API bindings and safe handles.
 //!
-//! - `ttd_sys` — bindgen output for the thin C++ shim in `csrc/`. Raw, and
-//!   private to this module: everything callers use is re-exported here.
+//! - `ffi.rs` — the cxx bridge to the C++ wrapper in `ttd/cpp/ttd_cxx.*`. Raw,
+//!   and private to this module: everything callers use is re-exported here.
 //! - `engine.rs` — [`ReplayEngine`], owner of the SDK replay engine.
 //! - `cursor.rs` — [`ReplayCursor`], positions, memory, threads, callbacks.
 //! - `callback.rs` — panic escalation for callbacks crossing the FFI boundary.
@@ -15,6 +15,7 @@ pub mod types;
 mod callback;
 mod cursor;
 mod engine;
+mod ffi;
 mod interrupt;
 
 pub use cursor::{ActiveThread, ReplayCursor};

@@ -33,12 +33,7 @@ gdbstub = { git = "https://github.com/lwintermelon/gdbstub", branch = "ttd-dbg",
 gdbstub_arch = { git = "https://github.com/lwintermelon/gdbstub", branch = "ttd-dbg" }
 quick-xml = { version = "0.42", default-features = false, features = ["serialize"] }
 ctrlc = { version = "3", features = ["termination"] }
+cxx = "1"
 
 [build-dependencies]
-cc = "1"
-# bindgen 0.73.2 declares `syn = ">=2, <4"` but its optional `prettyplease`
-# dependency requires syn 2; Cargo picking syn 3 makes that combination fail to
-# compile. We use bindgen's default rustfmt formatter, so the prettyplease
-# feature is unnecessary: disable default features and enable only the two we
-# need (logging + runtime).
-bindgen = { version = "0.73", default-features = false, features = ["logging", "runtime"] }
+cxx-build = "1"

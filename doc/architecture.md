@@ -22,9 +22,9 @@ GDB/LLDB/Delve client
         │  ReplayEngine / ReplayCursor  (safe wrapper)
         ▼
   src/ttd/            SDK handle ownership, value vocabulary, ^C interrupt slot
-        │  bindgen-generated `extern` declarations
+        │  cxx bridge (`src/ttd/ffi.rs`)
         ▼
-  src/ttd_sys/ ──csrc/ttd_sys.cpp──▶  TTDReplay.dll (C++ replay engine)
+  src/ttd/cpp/ttd_cxx.cpp ──▶  TTDReplay.dll (C++ replay engine)
 ```
 
 Three properties of this shape are deliberate:
@@ -40,13 +40,12 @@ Three properties of this shape are deliberate:
    The project scope is "time-travel debugging of a recorded x86_64 Windows
    trace", and the trait says so. A future non-TTD backend would adapt into
    this model rather than the other way around.
-3. **The bindings are one thin layer, then a safe one**. `src/ttd_sys` is
-   bindgen output for `csrc/ttd_sys.hpp`, a C++ surface that forwards to the
-   SDK; `src/ttd` owns the handles and is the only API the target layer names.
-   `#![deny(unsafe_code)]` holds everywhere else, so a raw pointer can only
-   appear where the FFI contracts are written down — the bindings themselves
-   and the type-erased cursor address in `ttd/interrupt.rs` that lets ^C abort
-   a replay from another thread.
+3. **The boundary is one typed bridge, then a safe wrapper**. `src/ttd/ffi.rs`
+   is the cxx bridge to `src/ttd/cpp/ttd_cxx.*`, which owns the SDK handles; `src/ttd`
+   is the only API the target layer names. `#![deny(unsafe_code)]` holds
+   everywhere else, so a raw pointer can only appear where the FFI contracts
+   are written down — the cxx bridge and the type-erased cursor address in
+   `ttd/interrupt.rs` that lets ^C abort a replay from another thread.
 
 ## Dynamics: the life of a `vCont;c`
 

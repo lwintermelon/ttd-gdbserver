@@ -7,7 +7,7 @@
 #![deny(unsafe_code)]
 
 // The TTD Replay API only exists on Windows; fail fast with a clear message
-// instead of a wall of missing-binding errors from bindgen/FFI.
+// instead of a wall of missing C++/FFI errors.
 #[cfg(not(windows))]
 compile_error!("ttd-gdbserver builds only on Windows: it links the WinDbg TTD Replay DLL");
 
@@ -21,5 +21,3 @@ pub mod gdb;
 pub mod target;
 #[allow(unsafe_code)]
 pub mod ttd;
-#[allow(unsafe_code)]
-pub mod ttd_sys;

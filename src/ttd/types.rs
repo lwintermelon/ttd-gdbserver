@@ -1,19 +1,20 @@
 //! TTD value types: the vocabulary the rest of the crate uses.
 //!
-//! Most are the SDK's own structs under the crate's names. The two that are
-//! not — [`TtdReplayResult`] and [`TtdExceptionEvent`] — are the flat shapes
-//! the target layer consumes, derived once from the SDK's raw records.
+//! Simple records are the cxx bridge's shared structs, re-exported here with
+//! their methods and derives. Semantic shapes (`TtdReplayResult`, `EventType`,
+//! `TtdX64Regs`, …) stay separate; register state is decoded from a fixed
+//! little-endian word stream so no SDK layout crosses the bridge.
+
+#![allow(non_snake_case)]
 
 use bitflags::bitflags;
 
-use crate::ttd_sys as sys;
+use crate::ttd::ffi;
 
-pub type TtdPosition = sys::TTD_Replay_Position;
-pub type TtdPositionRange = sys::TTD_Replay_PositionRange;
-pub type TtdThreadInfo = sys::TTD_Replay_ThreadInfo;
-pub type TtdMemRange = sys::TTD_Replay_MemoryRange;
-pub type TtdX64Regs = sys::AMD64_CONTEXT;
-pub type XmmSaveArea = sys::AMD64_XMM_SAVE_AREA32;
+pub use crate::ttd::ffi::{
+    ExceptionInfo as TtdExceptionEvent, MemoryRange as TtdMemRange, Position as TtdPosition,
+    PositionRange as TtdPositionRange, ThreadInfo as TtdThreadInfo,
+};
 
 impl TtdPosition {
     /// Build a position from its two coordinates.
@@ -44,15 +45,11 @@ impl std::fmt::Display for TtdPosition {
     }
 }
 
-impl Ord for TtdPosition {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        (self.Sequence, self.Steps).cmp(&(other.Sequence, other.Steps))
-    }
-}
-
-impl PartialOrd for TtdPosition {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
+impl TtdMemRange {
+    /// Bytes held by this run of memory.
+    #[must_use]
+    pub const fn size(&self) -> u64 {
+        self.size
     }
 }
 
@@ -69,35 +66,17 @@ pub struct TtdReplayResult {
     pub wp_access_type: DataAccessType,
 }
 
-impl From<sys::TTD_Replay_ICursorView_ReplayResult> for TtdReplayResult {
-    fn from(value: sys::TTD_Replay_ICursorView_ReplayResult) -> Self {
-        let (wp_address, wp_size, wp_access_type) =
-            if value.StopReason == sys::TTD_Replay_EventType_MemoryWatchpoint {
-                // SAFETY: the union member is active exactly for this stop reason.
-                let hit = unsafe { value.__bindgen_anon_1.MemoryWatchpoint };
-                (hit.Address, hit.Size, DataAccessType::from(hit.AccessType))
-            } else {
-                (0, 0, DataAccessType::Read)
-            };
-
+impl From<ffi::ReplayOutcome> for TtdReplayResult {
+    fn from(value: ffi::ReplayOutcome) -> Self {
         Self {
-            stop_reason: EventType::from(value.StopReason),
-            steps_executed: value.StepsExecuted,
-            instructions_executed: value.InstructionsExecuted,
-            wp_address,
-            wp_size,
-            wp_access_type,
+            stop_reason: EventType::from(value.stop_reason),
+            steps_executed: value.steps,
+            instructions_executed: value.instructions,
+            wp_address: value.wp_address,
+            wp_size: value.wp_size,
+            wp_access_type: DataAccessType::from(value.wp_access),
         }
     }
-}
-
-/// One exception event recorded in the trace.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-pub struct TtdExceptionEvent {
-    pub position: TtdPosition,
-    pub code: u32,
-    pub record_address: u64,
-    pub program_counter: u64,
 }
 
 /// A module as the trace recorded it.
@@ -122,12 +101,12 @@ pub enum TtdIndexStatus {
     Unknown,
 }
 
-impl From<sys::TTD_Replay_IndexStatus> for TtdIndexStatus {
-    fn from(value: sys::TTD_Replay_IndexStatus) -> Self {
+impl From<u8> for TtdIndexStatus {
+    fn from(value: u8) -> Self {
         match value {
-            sys::TTD_Replay_IndexStatus_IndexFileLoaded => Self::Loaded,
-            sys::TTD_Replay_IndexStatus_IndexFileNotPresent => Self::NotPresent,
-            sys::TTD_Replay_IndexStatus_IndexFileUnloadable => Self::Unloadable,
+            0 => Self::Loaded,
+            1 => Self::NotPresent,
+            2 => Self::Unloadable,
             _ => Self::Unknown,
         }
     }
@@ -156,17 +135,17 @@ pub enum EventType {
 impl From<u8> for EventType {
     fn from(value: u8) -> Self {
         match value {
-            sys::TTD_Replay_EventType_MemoryWatchpoint => Self::MemoryWatchpoint,
-            sys::TTD_Replay_EventType_PositionWatchpoint => Self::PositionWatchpoint,
-            sys::TTD_Replay_EventType_Exception => Self::Exception,
-            sys::TTD_Replay_EventType_Gap => Self::Gap,
-            sys::TTD_Replay_EventType_Thread => Self::Thread,
-            sys::TTD_Replay_EventType_StepCount => Self::StepCount,
-            sys::TTD_Replay_EventType_Position => Self::Position,
-            sys::TTD_Replay_EventType_Process => Self::Process,
-            sys::TTD_Replay_EventType_Interrupted => Self::Interrupted,
-            sys::TTD_Replay_EventType_Error => Self::Error,
-            sys::TTD_Replay_EventType_Count => Self::Count,
+            0 => Self::MemoryWatchpoint,
+            1 => Self::PositionWatchpoint,
+            2 => Self::Exception,
+            3 => Self::Gap,
+            4 => Self::Thread,
+            5 => Self::StepCount,
+            6 => Self::Position,
+            7 => Self::Process,
+            8 => Self::Interrupted,
+            9 => Self::Error,
+            10 => Self::Count,
             other => Self::Unknown(other),
         }
     }
@@ -193,10 +172,6 @@ impl std::fmt::Display for EventType {
 }
 
 /// The access a watchpoint hit performed, as the SDK's `DataAccessType`.
-///
-/// An enum rather than a mask: the engine reports exactly one access kind per
-/// hit, and the SDK numbers them (`Read = 0`, `Write = 1`, …) instead of
-/// setting bits.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum DataAccessType {
     #[default]
@@ -214,10 +189,6 @@ pub enum DataAccessType {
 
 impl DataAccessType {
     /// The single mask bit this access kind corresponds to.
-    ///
-    /// The engine reports a `DataAccessType` enum value while watchpoints are
-    /// registered with a mask, so a hit has to be translated before it can be
-    /// matched against a breakpoint.
     #[must_use]
     pub const fn mask(self) -> DataAccessMask {
         match self {
@@ -237,14 +208,14 @@ impl DataAccessType {
 impl From<u8> for DataAccessType {
     fn from(value: u8) -> Self {
         match value {
-            sys::TTD_Replay_DataAccessType_Read => Self::Read,
-            sys::TTD_Replay_DataAccessType_Write => Self::Write,
-            sys::TTD_Replay_DataAccessType_Execute => Self::Execute,
-            sys::TTD_Replay_DataAccessType_CodeFetch => Self::CodeFetch,
-            sys::TTD_Replay_DataAccessType_Overwrite => Self::Overwrite,
-            sys::TTD_Replay_DataAccessType_DataMismatch => Self::DataMismatch,
-            sys::TTD_Replay_DataAccessType_NewData => Self::NewData,
-            sys::TTD_Replay_DataAccessType_RedundantData => Self::RedundantData,
+            0 => Self::Read,
+            1 => Self::Write,
+            2 => Self::Execute,
+            3 => Self::CodeFetch,
+            4 => Self::Overwrite,
+            5 => Self::DataMismatch,
+            6 => Self::NewData,
+            7 => Self::RedundantData,
             other => Self::Unknown(other),
         }
     }
@@ -253,22 +224,18 @@ impl From<u8> for DataAccessType {
 bitflags! {
     /// The data accesses a watchpoint can observe, as the SDK's
     /// `DataAccessMask`.
-    ///
-    /// Only [`READ`](Self::READ), [`WRITE`](Self::WRITE) and
-    /// [`EXECUTE`](Self::EXECUTE) are meaningful to `AddMemoryWatchpoint`; the
-    /// rest exist because the SDK defines them and a hit can report one.
     #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
     pub struct DataAccessMask: u8 {
-        const READ           = sys::TTD_Replay_DataAccessMask_Read;
-        const WRITE          = sys::TTD_Replay_DataAccessMask_Write;
-        const EXECUTE        = sys::TTD_Replay_DataAccessMask_Execute;
-        const CODE_FETCH     = sys::TTD_Replay_DataAccessMask_CodeFetch;
-        const OVERWRITE      = sys::TTD_Replay_DataAccessMask_Overwrite;
-        const DATA_MISMATCH  = sys::TTD_Replay_DataAccessMask_DataMismatch;
-        const NEW_DATA       = sys::TTD_Replay_DataAccessMask_NewData;
-        const REDUNDANT_DATA = sys::TTD_Replay_DataAccessMask_RedundantData;
-        const NONE           = sys::TTD_Replay_DataAccessMask_None;
-        const READ_WRITE     = sys::TTD_Replay_DataAccessMask_ReadWrite;
+        const READ           = 1 << 0;
+        const WRITE          = 1 << 1;
+        const EXECUTE        = 1 << 2;
+        const CODE_FETCH     = 1 << 3;
+        const OVERWRITE      = 1 << 4;
+        const DATA_MISMATCH  = 1 << 5;
+        const NEW_DATA       = 1 << 6;
+        const REDUNDANT_DATA = 1 << 7;
+        const NONE           = 0;
+        const READ_WRITE     = Self::READ.bits() | Self::WRITE.bits();
     }
 }
 
@@ -276,13 +243,17 @@ bitflags! {
     /// The event kinds that stop a replay, as the SDK's `EventMask`.
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct EventMask: u32 {
-        const MEMORY_WATCHPOINT   = sys::TTD_Replay_EventMask_MemoryWatchpoint;
-        const POSITION_WATCHPOINT = sys::TTD_Replay_EventMask_PositionWatchpoint;
-        const EXCEPTION           = sys::TTD_Replay_EventMask_Exception;
-        const GAP                 = sys::TTD_Replay_EventMask_Gap;
-        const THREAD              = sys::TTD_Replay_EventMask_Thread;
-        const NONE                = sys::TTD_Replay_EventMask_None;
-        const ALL                 = sys::TTD_Replay_EventMask_All;
+        const MEMORY_WATCHPOINT   = 1 << 0;
+        const POSITION_WATCHPOINT = 1 << 1;
+        const EXCEPTION           = 1 << 2;
+        const GAP                 = 1 << 3;
+        const THREAD              = 1 << 4;
+        const NONE                = 0;
+        const ALL                 = Self::MEMORY_WATCHPOINT.bits()
+                                  | Self::POSITION_WATCHPOINT.bits()
+                                  | Self::EXCEPTION.bits()
+                                  | Self::GAP.bits()
+                                  | Self::THREAD.bits();
     }
 }
 
@@ -291,49 +262,151 @@ bitflags! {
     /// `ExceptionMask`.
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
     pub struct ExceptionMask: u32 {
-        const HARDWARE    = sys::TTD_Replay_ExceptionMask_Hardware;
-        const SOFTWARE    = sys::TTD_Replay_ExceptionMask_Software;
-        const CPLUS_PLUS  = sys::TTD_Replay_ExceptionMask_CPlusPlus;
-        const DEBUG_PRINT = sys::TTD_Replay_ExceptionMask_DebugPrint;
-        const NONE        = sys::TTD_Replay_ExceptionMask_None;
-        const ALL         = sys::TTD_Replay_ExceptionMask_All;
+        const HARDWARE    = 1 << 0;
+        const SOFTWARE    = 1 << 1;
+        const CPLUS_PLUS  = 1 << 2;
+        const DEBUG_PRINT = 1 << 3;
+        const NONE        = 0;
+        const ALL         = Self::HARDWARE.bits()
+                          | Self::SOFTWARE.bits()
+                          | Self::CPLUS_PLUS.bits()
+                          | Self::DEBUG_PRINT.bits();
     }
 }
 
-impl TtdMemRange {
-    /// Bytes held by this run of memory.
-    ///
-    /// The SDK's `ConstBufferView` is a `{ pointer, size }` pair that bindgen
-    /// can only see as opaque bytes, so the size is read from its second word.
-    #[must_use]
-    pub fn size(&self) -> u64 {
-        // SAFETY: `ConstBufferView` is a `{ pointer, size }` pair.
-        unsafe { *(&raw const self.Memory).cast::<u64>().add(1) }
-    }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct M128A {
+    pub Low: u64,
+    pub High: u64,
 }
 
-/// Build a [`TtdMemRange`] with a size but no backing buffer.
-#[cfg(test)]
-#[must_use]
-pub(crate) fn memory_range(address: u64, size: u64, sequence: u64) -> TtdMemRange {
-    let mut range = TtdMemRange {
-        Address: address,
-        Memory: crate::ttd_sys::TTD_ConstBufferView::default(),
-        Sequence: sequence,
-    };
-    // SAFETY: `ConstBufferView` is a `{ pointer, size }` pair.
-    unsafe {
-        let words = (&raw mut range.Memory).cast::<u64>();
-        *words.add(1) = size;
-    }
-    range
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct XmmSaveArea {
+    pub ControlWord: u16,
+    pub StatusWord: u16,
+    pub TagWord: u8,
+    pub ErrorOpcode: u16,
+    pub ErrorOffset: u32,
+    pub ErrorSelector: u16,
+    pub DataOffset: u32,
+    pub DataSelector: u16,
+    pub MxCsr: u32,
+    pub FloatRegisters: [M128A; 8],
+    pub XmmRegisters: [M128A; 16],
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct TtdX64RegsAnon {
+    pub FltSave: XmmSaveArea,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct TtdX64Regs {
+    pub Rax: u64,
+    pub Rbx: u64,
+    pub Rcx: u64,
+    pub Rdx: u64,
+    pub Rsi: u64,
+    pub Rdi: u64,
+    pub Rbp: u64,
+    pub Rsp: u64,
+    pub R8: u64,
+    pub R9: u64,
+    pub R10: u64,
+    pub R11: u64,
+    pub R12: u64,
+    pub R13: u64,
+    pub R14: u64,
+    pub R15: u64,
+    pub Rip: u64,
+    pub EFlags: u32,
+    pub SegCs: u16,
+    pub SegDs: u16,
+    pub SegEs: u16,
+    pub SegFs: u16,
+    pub SegGs: u16,
+    pub SegSs: u16,
+    pub fpu: TtdX64RegsAnon,
 }
 
 impl TtdX64Regs {
     /// The FPU/SSE half of this context.
     #[must_use]
     pub fn flt_save(&self) -> XmmSaveArea {
-        // SAFETY: the floating-point member is the active interpretation.
-        unsafe { self.__bindgen_anon_1.FltSave }
+        self.fpu.FltSave
+    }
+}
+
+/// Decode the 81-word little-endian stream produced by `GetAmd64Context`.
+pub(crate) fn decode_amd64_context(bytes: &[u8]) -> Option<TtdX64Regs> {
+    const WORDS: usize = 81;
+    if bytes.len() != WORDS * 8 {
+        return None;
+    }
+    let mut words = bytes.chunks(8).map(|chunk| {
+        let mut word = [0u8; 8];
+        word.copy_from_slice(chunk);
+        u64::from_le_bytes(word)
+    });
+    let mut next = || words.next().unwrap_or(0);
+
+    let mut regs = TtdX64Regs {
+        Rax: next(),
+        Rbx: next(),
+        Rcx: next(),
+        Rdx: next(),
+        Rsi: next(),
+        Rdi: next(),
+        Rbp: next(),
+        Rsp: next(),
+        R8: next(),
+        R9: next(),
+        R10: next(),
+        R11: next(),
+        R12: next(),
+        R13: next(),
+        R14: next(),
+        R15: next(),
+        Rip: next(),
+        ..TtdX64Regs::default()
+    };
+    regs.EFlags = u32::try_from(next()).ok()?;
+    regs.SegCs = u16::try_from(next()).ok()?;
+    regs.SegDs = u16::try_from(next()).ok()?;
+    regs.SegEs = u16::try_from(next()).ok()?;
+    regs.SegFs = u16::try_from(next()).ok()?;
+    regs.SegGs = u16::try_from(next()).ok()?;
+    regs.SegSs = u16::try_from(next()).ok()?;
+
+    let mut flt = XmmSaveArea::default();
+    for register in &mut flt.FloatRegisters {
+        register.Low = next();
+        register.High = next();
+    }
+    for register in &mut flt.XmmRegisters {
+        register.Low = next();
+        register.High = next();
+    }
+    flt.ControlWord = u16::try_from(next()).ok()?;
+    flt.StatusWord = u16::try_from(next()).ok()?;
+    flt.TagWord = u8::try_from(next()).ok()?;
+    flt.ErrorOpcode = u16::try_from(next()).ok()?;
+    flt.ErrorOffset = u32::try_from(next()).ok()?;
+    flt.ErrorSelector = u16::try_from(next()).ok()?;
+    flt.DataOffset = u32::try_from(next()).ok()?;
+    flt.DataSelector = u16::try_from(next()).ok()?;
+    flt.MxCsr = u32::try_from(next()).ok()?;
+    regs.fpu.FltSave = flt;
+    Some(regs)
+}
+
+/// Build a [`TtdMemRange`] with a size but no backing buffer.
+#[cfg(test)]
+#[must_use]
+pub(crate) fn memory_range(address: u64, size: u64, sequence: u64) -> TtdMemRange {
+    TtdMemRange {
+        Address: address,
+        size,
+        Sequence: sequence,
     }
 }

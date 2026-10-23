@@ -62,7 +62,7 @@ impl Default for MockTarget {
         regs.Rbp = 0x7ffc_0100;
         regs.EFlags = 0x202;
         regs.SegCs = 0x33;
-        regs.__bindgen_anon_1.FltSave = flt;
+        regs.fpu.FltSave = flt;
         Self {
             position: TtdPosition::new(1, 0),
             current_tid: Some(100),

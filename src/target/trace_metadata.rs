@@ -49,14 +49,8 @@ impl TraceMetadata {
             .collect();
         let exceptions = engine.exception_events();
         let lifetime = engine.lifetime();
-        Self::new(
-            &threads,
-            modules,
-            exceptions,
-            TtdPosition::from(lifetime.Min),
-            TtdPosition::from(lifetime.Max),
-        )
-        .with_index_status(engine.index_state())
+        Self::new(&threads, modules, exceptions, lifetime.Min, lifetime.Max)
+            .with_index_status(engine.index_state())
     }
 
     /// Build from already-materialized tables. Exposed for unit tests, which
@@ -78,10 +72,7 @@ impl TraceMetadata {
             .map(|t| ThreadDiagnostics {
                 unique_id: t.UniqueId,
                 os_thread_id: t.Id,
-                active_time: (
-                    TtdPosition::from(t.ActiveTime.Min),
-                    TtdPosition::from(t.ActiveTime.Max),
-                ),
+                active_time: (t.ActiveTime.Min, t.ActiveTime.Max),
             })
             .collect();
         Self {

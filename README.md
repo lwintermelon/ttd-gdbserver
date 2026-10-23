@@ -145,13 +145,16 @@ The GDB RSP engine is [gdbstub](https://github.com/lwintermelon/gdbstub), a git
 dependency on branch `ttd-dbg` — not on crates.io, because the branch carries
 the protocol extensions this server needs.
 
-The TTD bindings are this repository's own thin C++ surface (`csrc/ttd_sys.hpp`),
-generated into Rust by bindgen into `OUT_DIR` (`src/ttd_sys/mod.rs`
-`include!`s it) and wrapped safely in `src/ttd/`. The upstream
-[`ttd`](https://github.com/hugsy/ttd-rust) bindings were the starting point but
-do not expose the memory-watchpoint callback, interrupt, memory policy, range
-queries or per-thread context a debugger frontend needs; the constraints that
-shaped this shim are in [`doc/ttd-internals.md` §13](doc/ttd-internals.md).
+The TTD boundary is an [`cxx`](https://cxx.rs) bridge: `src/ttd/cpp/ttd_cxx.hpp` /
+`ttd_cxx.cpp` own the SDK handles and expose a typed C++ surface;
+`src/ttd/ffi.rs` is the bridge; `src/ttd/` is the safe wrapper the rest of the
+crate uses. The bridge carries ownership, callbacks, memory slices and plain
+value structs, so the Rust side has no bindgen-generated raw FFI layer. The
+upstream [`ttd`](https://github.com/hugsy/ttd-rust) bindings were the starting
+point but do not expose the memory-watchpoint callback, interrupt, memory
+policy, range queries or per-thread context a debugger frontend needs; the
+constraints that shaped this surface are in
+[`doc/ttd-internals.md` §13](doc/ttd-internals.md).
 
 ## Testing
 
